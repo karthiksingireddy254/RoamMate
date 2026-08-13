@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTravel } from '../context/TravelContext';
 import { 
   User, Building2, MapPin, Eye, EyeOff, Lock, Mail, Phone, 
-  Wrench, CheckCircle2, ShieldCheck, ArrowRight, Loader2, Sparkles 
+  Loader2 
 } from 'lucide-react';
 
 const SERVICE_CATEGORIES = [
@@ -60,26 +60,8 @@ export default function AuthLandingScreen() {
   const [category, setCategory] = useState('service');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState(currentLocation.city || 'Agra');
-  const [is247Emergency, setIs247Emergency] = useState(true);
-  const [coverageRadiusKm, setCoverageRadiusKm] = useState(15);
 
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-
-  // Password strength helper
-  const getPasswordStrength = (pwd) => {
-    if (!pwd) return { label: '', score: 0, color: 'bg-slate-300' };
-    let score = 0;
-    if (pwd.length >= 8) score += 40;
-    if (/[A-Z]/.test(pwd)) score += 20;
-    if (/[0-9]/.test(pwd)) score += 20;
-    if (/[!@#$%^&*]/.test(pwd)) score += 20;
-
-    if (score <= 40) return { label: 'Weak', score: 33, color: 'bg-rose-500', text: 'text-rose-500' };
-    if (score <= 80) return { label: 'Medium', score: 66, color: 'bg-amber-500', text: 'text-amber-500' };
-    return { label: 'Strong', score: 100, color: 'bg-emerald-500', text: 'text-emerald-500' };
-  };
-
-  const strength = getPasswordStrength(password);
 
   const handleModeSwitch = (mode) => {
     setActiveMode(mode);
@@ -167,43 +149,34 @@ export default function AuthLandingScreen() {
     }`}>
       
       {/* Background Decorative Ambient Lights */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[450px] h-[450px] bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Main Single Authentication Card Wrapper */}
-      <div className="max-w-xl w-full mx-auto z-10 flex flex-col items-center space-y-6">
+      {/* Main Single Authentication Wrapper */}
+      <div className="max-w-md w-full mx-auto z-10 flex flex-col items-center space-y-6">
         
-        {/* Brand Header */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 backdrop-blur-md shadow-sm">
-            <MapPin className="w-3.5 h-3.5 text-sky-500" />
-            <span className="text-[11px] font-black uppercase tracking-widest text-sky-500">Real-Time Travel Service Network</span>
-          </div>
-
-          <h1 className="text-4xl sm:text-5xl font-black font-display tracking-tight leading-tight">
+        {/* BRAND HEADER */}
+        <div className="text-center space-y-1">
+          <h1 className="text-4xl sm:text-5xl font-black font-display tracking-tight">
             ROAM<span className="text-sky-500">MATE</span>
           </h1>
-
-          <p className="text-base font-black text-sky-600 font-display">
-            "Your journey starts here."
-          </p>
-          <p className={`text-xs font-bold max-w-md mx-auto ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-            Discover what you need, wherever your journey takes you.
+          <p className="text-xs font-bold text-slate-500 tracking-wide">
+            Your location-first travel companion
           </p>
         </div>
 
-        {/* SINGLE AUTHENTICATION CARD */}
+        {/* SINGLE LOGIN CARD */}
         <div className={`w-full rounded-3xl border shadow-2xl p-6 sm:p-8 space-y-6 relative transition-all duration-300 ${
           isLight ? 'bg-white border-slate-200 shadow-sky-500/5' : 'bg-slate-900/95 border-slate-800 shadow-sky-500/10 backdrop-blur-xl'
         }`}>
           
-          {/* TOP-CENTER ANIMATED SEGMENTED ROLE SWITCH */}
+          {/* TOP-CENTER SEGMENTED SWITCH (DIRECTLY ABOVE HEADING) */}
           <div className="flex items-center justify-center">
-            <div className={`relative p-1.5 rounded-2xl border flex items-center w-full max-w-sm ${
+            <div className={`relative p-1.5 rounded-2xl border flex items-center w-full max-w-xs ${
               isLight ? 'bg-slate-100 border-slate-300' : 'bg-slate-950 border-slate-800'
             }`}>
               
-              {/* Sliding Background Indicator Pill (200-300ms transition) */}
+              {/* Animated 200-300ms Sliding Pill Indicator */}
               <div 
                 className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] rounded-xl transition-all duration-300 ease-in-out shadow-md ${
                   activeMode === 'tourist' 
@@ -215,65 +188,52 @@ export default function AuthLandingScreen() {
               <button
                 type="button"
                 onClick={() => handleModeSwitch('tourist')}
-                className={`relative z-10 flex-1 py-2 flex items-center justify-center gap-2 rounded-xl text-xs font-black transition-colors duration-200 cursor-pointer ${
+                className={`relative z-10 flex-1 py-2 flex items-center justify-center gap-1.5 rounded-xl text-xs font-black transition-colors duration-200 cursor-pointer active:scale-95 ${
                   activeMode === 'tourist' ? 'text-white' : isLight ? 'text-slate-700 hover:text-black' : 'text-slate-400 hover:text-white'
                 }`}
               >
-                <User className="w-4 h-4" />
+                <User className="w-3.5 h-3.5" />
                 <span>👤 TOURIST</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleModeSwitch('provider')}
-                className={`relative z-10 flex-1 py-2 flex items-center justify-center gap-2 rounded-xl text-xs font-black transition-colors duration-200 cursor-pointer ${
+                className={`relative z-10 flex-1 py-2 flex items-center justify-center gap-1.5 rounded-xl text-xs font-black transition-colors duration-200 cursor-pointer active:scale-95 ${
                   activeMode === 'provider' ? 'text-white' : isLight ? 'text-slate-700 hover:text-black' : 'text-slate-400 hover:text-white'
                 }`}
               >
-                <Building2 className="w-4 h-4" />
+                <Building2 className="w-3.5 h-3.5" />
                 <span>🏢 SERVICE PROVIDER</span>
               </button>
 
             </div>
           </div>
 
-          {/* Dynamic Form Heading & Subtitle */}
+          {/* DYNAMIC FORM HEADING */}
           <div className="text-center space-y-1 transition-all duration-300">
-            {activeMode === 'tourist' ? (
-              <>
-                <h3 className="text-xl font-black font-display text-sky-500">
-                  {tab === 'login' ? 'Welcome back, traveler' : tab === 'register' ? 'Start your journey' : 'Forgot your password?'}
-                </h3>
-                <p className="text-xs font-bold text-slate-500">
-                  {tab === 'login' ? 'Sign in and continue your journey with RoamMate.' : tab === 'register' ? 'Create your RoamMate account and discover useful services around you.' : 'Enter your email to receive password reset instructions.'}
-                </p>
-              </>
-            ) : (
-              <>
-                <h3 className="text-xl font-black font-display text-amber-500">
-                  {tab === 'login' ? 'Welcome, Service Provider' : tab === 'register' ? 'Register your service' : 'Reset your password'}
-                </h3>
-                <p className="text-xs font-bold text-slate-500">
-                  {tab === 'login' ? 'Sign in to manage your services and help travelers nearby.' : tab === 'register' ? 'Help travelers find your service when they need it.' : 'Enter your registered business email to receive reset instructions.'}
-                </p>
-              </>
-            )}
+            <h2 className="text-2xl font-black font-display">
+              {activeMode === 'tourist' 
+                ? (tab === 'login' ? 'Tourist Login' : tab === 'register' ? 'Tourist Sign Up' : 'Forgot Password?')
+                : (tab === 'login' ? 'Service Provider Login' : tab === 'register' ? 'Service Provider Registration' : 'Reset Password')
+              }
+            </h2>
           </div>
 
-          {/* Backend Error Notification (Includes Role Mismatch Error Protection) */}
+          {/* Backend Error Notification */}
           {authError && (
             <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/40 text-rose-600 text-xs font-black text-center shadow-sm">
               {authError}
             </div>
           )}
 
-          {/* Authentication Form */}
+          {/* DYNAMIC AUTHENTICATION FORM */}
           <form onSubmit={handleSubmit} className="space-y-4">
             
             {/* REGISTER: Tourist Full Name */}
             {tab === 'register' && activeMode === 'tourist' && (
               <div>
-                <label className="text-xs font-black uppercase text-slate-500 mb-1 block">Full Name</label>
+                <label className="text-xs font-black text-slate-500 mb-1 block">Full Name</label>
                 <div className="relative">
                   <User className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
@@ -290,11 +250,11 @@ export default function AuthLandingScreen() {
               </div>
             )}
 
-            {/* REGISTER: Provider Business Name & Owner Name */}
+            {/* REGISTER: Provider Business Name & Manager Name */}
             {tab === 'register' && activeMode === 'provider' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-black uppercase text-slate-500 mb-1 block">Business Name</label>
+                  <label className="text-xs font-black text-slate-500 mb-1 block">Business Name</label>
                   <input
                     type="text"
                     placeholder="Agra Towing & Mechanics"
@@ -307,7 +267,7 @@ export default function AuthLandingScreen() {
                   {errors.businessName && <p className="text-[10px] text-rose-500 font-bold mt-1">{errors.businessName}</p>}
                 </div>
                 <div>
-                  <label className="text-xs font-black uppercase text-slate-500 mb-1 block">Manager Name</label>
+                  <label className="text-xs font-black text-slate-500 mb-1 block">Manager Name</label>
                   <input
                     type="text"
                     placeholder="Karthik Singireddy"
@@ -321,9 +281,9 @@ export default function AuthLandingScreen() {
               </div>
             )}
 
-            {/* Common Email Field */}
+            {/* EMAIL FIELD (Exact Label Match) */}
             <div>
-              <label className="text-xs font-black uppercase text-slate-500 mb-1 block">
+              <label className="text-xs font-black text-slate-500 mb-1 block">
                 {activeMode === 'provider' ? 'Business Email' : 'Email Address'}
               </label>
               <div className="relative">
@@ -344,7 +304,7 @@ export default function AuthLandingScreen() {
             {/* REGISTER: Phone Number */}
             {tab === 'register' && (
               <div>
-                <label className="text-xs font-black uppercase text-slate-500 mb-1 block">Phone Number</label>
+                <label className="text-xs font-black text-slate-500 mb-1 block">Phone Number</label>
                 <div className="relative">
                   <Phone className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
@@ -361,12 +321,12 @@ export default function AuthLandingScreen() {
               </div>
             )}
 
-            {/* REGISTER: Provider Service Category & Address */}
+            {/* REGISTER: Provider Category & Address */}
             {tab === 'register' && activeMode === 'provider' && (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-black uppercase text-slate-500 mb-1 block">Service Category</label>
+                    <label className="text-xs font-black text-slate-500 mb-1 block">Service Category</label>
                     <select
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
@@ -380,7 +340,7 @@ export default function AuthLandingScreen() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-black uppercase text-slate-500 mb-1 block">City</label>
+                    <label className="text-xs font-black text-slate-500 mb-1 block">City</label>
                     <input
                       type="text"
                       placeholder="Agra"
@@ -394,7 +354,7 @@ export default function AuthLandingScreen() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-black uppercase text-slate-500 mb-1 block">Business Address</label>
+                  <label className="text-xs font-black text-slate-500 mb-1 block">Business Address</label>
                   <input
                     type="text"
                     placeholder="NH44 Highway Zone, Agra"
@@ -408,21 +368,10 @@ export default function AuthLandingScreen() {
               </>
             )}
 
-            {/* Password Field */}
+            {/* PASSWORD FIELD */}
             {tab !== 'forgot' && (
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-black uppercase text-slate-500">Password</label>
-                  {tab === 'login' && (
-                    <button
-                      type="button"
-                      onClick={() => handleTabSwitch('forgot')}
-                      className={`text-[11px] font-black hover:underline ${activeMode === 'provider' ? 'text-amber-500' : 'text-sky-500'}`}
-                    >
-                      Forgot password?
-                    </button>
-                  )}
-                </div>
+                <label className="text-xs font-black text-slate-500 mb-1 block">Password</label>
                 <div className="relative">
                   <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
@@ -443,26 +392,13 @@ export default function AuthLandingScreen() {
                   </button>
                 </div>
                 {errors.password && <p className="text-[10px] text-rose-500 font-bold mt-1">{errors.password}</p>}
-
-                {/* Password Strength Indicator for Registration */}
-                {tab === 'register' && password && (
-                  <div className="mt-2 space-y-1">
-                    <div className="flex items-center justify-between text-[10px] font-bold">
-                      <span className="text-slate-500">Password strength:</span>
-                      <span className={strength.text}>{strength.label}</span>
-                    </div>
-                    <div className="w-full h-1 bg-slate-200 rounded-full overflow-hidden">
-                      <div className={`h-full ${strength.color} transition-all duration-300`} style={{ width: `${strength.score}%` }} />
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 
-            {/* Confirm Password (Registration only) */}
+            {/* CONFIRM PASSWORD (Register only) */}
             {tab === 'register' && (
               <div>
-                <label className="text-xs font-black uppercase text-slate-500 mb-1 block">Confirm Password</label>
+                <label className="text-xs font-black text-slate-500 mb-1 block">Confirm Password</label>
                 <div className="relative">
                   <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
@@ -479,7 +415,7 @@ export default function AuthLandingScreen() {
               </div>
             )}
 
-            {/* Primary Submit Button */}
+            {/* PRIMARY SUBMIT BUTTON [ Login ] */}
             <button
               type="submit"
               disabled={isAuthLoading}
@@ -495,14 +431,55 @@ export default function AuthLandingScreen() {
                   <span>{tab === 'login' ? 'Signing In...' : tab === 'register' ? (activeMode === 'provider' ? 'Registering Service...' : 'Creating Account...') : 'Sending Reset Link...'}</span>
                 </>
               ) : (
-                <span>{tab === 'login' ? 'Sign In' : tab === 'register' ? (activeMode === 'provider' ? 'Register Service' : 'Create Account') : 'Send Reset Link'}</span>
+                <span>{tab === 'login' ? 'Login' : tab === 'register' ? (activeMode === 'provider' ? 'Register' : 'Sign Up') : 'Send Reset Link'}</span>
               )}
             </button>
           </form>
 
-          {/* Social Google Login (Tourist Login/Register only) */}
+          {/* FORGOT PASSWORD & DONT HAVE AN ACCOUNT (Exact Wording Match) */}
+          <div className="space-y-2 text-center text-xs font-bold pt-1">
+            {tab === 'login' && (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => handleTabSwitch('forgot')}
+                  className={`hover:underline font-black ${activeMode === 'provider' ? 'text-amber-500' : 'text-sky-500'}`}
+                >
+                  Forgot Password?
+                </button>
+              </div>
+            )}
+
+            <div className="pt-2 border-t border-slate-200/50">
+              {tab === 'login' ? (
+                <p className="text-slate-500">
+                  Don't have an account?{' '}
+                  <button 
+                    type="button" 
+                    onClick={() => handleTabSwitch('register')} 
+                    className={`font-black hover:underline ${activeMode === 'provider' ? 'text-amber-500' : 'text-sky-500'}`}
+                  >
+                    {activeMode === 'provider' ? 'Register' : 'Sign Up'}
+                  </button>
+                </p>
+              ) : (
+                <p className="text-slate-500">
+                  Already registered?{' '}
+                  <button 
+                    type="button" 
+                    onClick={() => handleTabSwitch('login')} 
+                    className={`font-black hover:underline ${activeMode === 'provider' ? 'text-amber-500' : 'text-sky-500'}`}
+                  >
+                    Sign In
+                  </button>
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Social Google Login (Tourist Login/Register) */}
           {activeMode === 'tourist' && tab !== 'forgot' && (
-            <div className="space-y-3 pt-2 border-t border-slate-200/50">
+            <div className="pt-2 border-t border-slate-200/50">
               <button
                 type="button"
                 onClick={loginWithGoogle}
@@ -520,33 +497,6 @@ export default function AuthLandingScreen() {
               </button>
             </div>
           )}
-
-          {/* Footer Tab Switcher */}
-          <div className="text-center text-xs font-bold pt-2 border-t border-slate-200/50">
-            {tab === 'login' ? (
-              <p className="text-slate-500">
-                {activeMode === 'provider' ? "Don't have a partner account?" : "Don't have an account?"}{' '}
-                <button 
-                  type="button" 
-                  onClick={() => handleTabSwitch('register')} 
-                  className={`font-black hover:underline ${activeMode === 'provider' ? 'text-amber-500' : 'text-sky-500'}`}
-                >
-                  {activeMode === 'provider' ? 'Register your business' : 'Create one'}
-                </button>
-              </p>
-            ) : (
-              <p className="text-slate-500">
-                Already registered?{' '}
-                <button 
-                  type="button" 
-                  onClick={() => handleTabSwitch('login')} 
-                  className={`font-black hover:underline ${activeMode === 'provider' ? 'text-amber-500' : 'text-sky-500'}`}
-                >
-                  Sign In
-                </button>
-              </p>
-            )}
-          </div>
 
           {/* Reset Link Success Message */}
           {resetSuccess && (
