@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTravel } from '../context/TravelContext';
 import { 
-  Fuel, Zap, Wrench, Truck, Car, Bike, X, ArrowRight, Building2, CheckCircle
+  Fuel, Zap, Wrench, Truck, Bike, X, ArrowRight, Building2
 } from 'lucide-react';
 
 const VEHICLE_SERVICES_GRID = [
@@ -38,14 +38,6 @@ const VEHICLE_SERVICES_GRID = [
     bg: 'bg-purple-950/60 border-purple-800'
   },
   {
-    id: 'parking',
-    title: 'Vehicle Parking',
-    desc: 'Multi-level automated car & bike parking plazas with 24x7 CCTV security, FASTag entry, and covered bays.',
-    icon: Car,
-    color: 'text-blue-400',
-    bg: 'bg-blue-950/60 border-blue-800'
-  },
-  {
     id: 'rental',
     title: 'Bike & Car Rentals',
     desc: 'Self-drive tourist scooter & motorcycle rentals (Activa, Royal Enfield) and SUV car rentals with zero deposit.',
@@ -61,7 +53,7 @@ export default function AllServicesModal() {
     setIsAllServicesModalOpen, 
     setSelectedCategory,
     categoryCounts,
-    setIsBusinessModalOpen
+    setRoleSelection
   } = useTravel();
 
   if (!isAllServicesModalOpen) return null;
@@ -148,11 +140,11 @@ export default function AllServicesModal() {
             <button
               onClick={() => {
                 setIsAllServicesModalOpen(false);
-                setIsBusinessModalOpen(true);
+                setRoleSelection('provider');
               }}
               className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-xs whitespace-nowrap cursor-pointer shadow-md shrink-0"
             >
-              Business Sign In / Register
+              Partner Sign In / Register
             </button>
           </div>
 

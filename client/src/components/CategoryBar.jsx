@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTravel } from '../context/TravelContext';
 import { 
-  Fuel, Zap, Wrench, Truck, Car, Bike, Compass, LayoutGrid
+  Fuel, Zap, Wrench, Truck, Bike, Compass, LayoutGrid
 } from 'lucide-react';
 
 const VEHICLE_CATEGORIES = [
@@ -10,7 +10,6 @@ const VEHICLE_CATEGORIES = [
   { id: 'towing', label: 'Breakdown Towing & Rescue', icon: Truck, color: 'text-purple-600' },
   { id: 'fuel', label: 'Fuel & Gas Stations', icon: Fuel, color: 'text-emerald-600' },
   { id: 'ev', label: 'EV Fast Chargers', icon: Zap, color: 'text-cyan-600' },
-  { id: 'parking', label: 'Vehicle Parking', icon: Car, color: 'text-blue-600' },
   { id: 'rental', label: 'Bike & Car Rentals', icon: Bike, color: 'text-indigo-600' }
 ];
 

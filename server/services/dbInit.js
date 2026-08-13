@@ -219,8 +219,8 @@ async function initializeDatabase() {
     await db.query(`CREATE INDEX IF NOT EXISTS idx_places_category ON places(category);`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_places_lat_lng ON places(lat, lng);`);
 
-    // 2. PURGE NON-VEHICLE PLACES FROM DATABASE
-    await db.query(`DELETE FROM places WHERE category NOT IN ('service', 'towing', 'fuel', 'ev', 'parking', 'rental');`);
+    // 2. PURGE NON-VEHICLE & PARKING PLACES FROM DATABASE
+    await db.query(`DELETE FROM places WHERE category NOT IN ('service', 'towing', 'fuel', 'ev', 'rental') OR category = 'parking';`);
 
     // 3. Create Saved Places Table
     await db.query(`
