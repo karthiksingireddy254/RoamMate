@@ -303,7 +303,11 @@ async function initializeDatabase() {
     await db.query(`CREATE INDEX IF NOT EXISTS idx_places_category ON places(category);`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_places_lat_lng ON places(lat, lng);`);
 
-    // 2. Create Saved Places Table
+    // 2. PURGE NON-VEHICLE PLACES (hotels, restaurants, ATMs, toilets, tourism) FROM DATABASE
+    await db.query(`DELETE FROM places WHERE category NOT IN ('service', 'towing', 'fuel', 'ev', 'parking', 'rental');`);
+    console.log('🧹 Purged non-vehicle places (hotels, restaurants, ATMs, tourism) from Supabase DB.');
+
+    // 3. Create Saved Places Table
     await db.query(`
       CREATE TABLE IF NOT EXISTS saved_places (
         id SERIAL PRIMARY KEY,
@@ -314,7 +318,7 @@ async function initializeDatabase() {
       );
     `);
 
-    // 3. Create Users Table
+    // 4. Create Users Table
     await db.query(`
       CREATE TABLE IF NOT EXISTS users (
         id VARCHAR(100) PRIMARY KEY,
@@ -327,7 +331,7 @@ async function initializeDatabase() {
       );
     `);
 
-    // 4. Create Business Organizations / Service Providers Table
+    // 5. Create Business Organizations / Service Providers Table
     await db.query(`
       CREATE TABLE IF NOT EXISTS business_providers (
         id VARCHAR(100) PRIMARY KEY,
