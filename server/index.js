@@ -90,6 +90,11 @@ app.post('/api/auth/login', async (req, res) => {
     const userRes = await db.query(`SELECT * FROM users WHERE email = $1;`, [cleanEmail]);
 
     if (!userRes.rows || userRes.rows.length === 0) {
+      // Check if registered under service_providers
+      const provCheck = await db.query(`SELECT * FROM service_providers WHERE email = $1;`, [cleanEmail]);
+      if (provCheck.rows && provCheck.rows.length > 0) {
+        return res.status(400).json({ error: 'This account is registered as a Service Provider. Please switch to Service Provider mode.' });
+      }
       return res.status(400).json({ error: 'Email or password is incorrect.' });
     }
 
@@ -105,6 +110,7 @@ app.post('/api/auth/login', async (req, res) => {
 
     return res.json({
       success: true,
+      role: 'tourist',
       user: {
         id: userRow.id,
         name: userRow.name,
@@ -213,6 +219,11 @@ app.post('/api/business/login', async (req, res) => {
     const providerRes = await db.query(`SELECT * FROM service_providers WHERE email = $1;`, [cleanEmail]);
 
     if (!providerRes.rows || providerRes.rows.length === 0) {
+      // Check if registered under users table
+      const userCheck = await db.query(`SELECT * FROM users WHERE email = $1;`, [cleanEmail]);
+      if (userCheck.rows && userCheck.rows.length > 0) {
+        return res.status(400).json({ error: 'This account is registered as a Tourist. Please switch to Tourist mode.' });
+      }
       return res.status(400).json({ error: 'Provider email or password is incorrect.' });
     }
 
@@ -228,6 +239,7 @@ app.post('/api/business/login', async (req, res) => {
 
     return res.json({
       success: true,
+      role: 'service_provider',
       provider: {
         id: row.id,
         businessName: row.business_name,
