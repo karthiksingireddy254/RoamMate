@@ -137,29 +137,7 @@ export default function Navbar() {
               )}
             </button>
 
-            {/* Business Partner Button */}
-            {businessUser ? (
-              <button
-                onClick={() => setIsBusinessModalOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-black shadow-md cursor-pointer"
-                title="Business Partner Dashboard - Add / Update Services"
-              >
-                <Building2 className="w-3.5 h-3.5" />
-                <span className="max-w-[100px] truncate">{businessUser.businessName}</span>
-                <PlusCircle className="w-3.5 h-3.5 text-amber-100" />
-              </button>
-            ) : (
-              <button
-                onClick={() => setIsBusinessModalOpen(true)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-black shadow cursor-pointer transition-all ${
-                  isLight ? 'bg-amber-50 border-amber-400 text-amber-900 hover:bg-amber-100' : 'bg-slate-900 border-amber-500/60 text-amber-400 hover:bg-slate-800'
-                }`}
-                title="Business Organizations & Workshop Service Providers Sign In / Register"
-              >
-                <Building2 className="w-3.5 h-3.5 text-amber-600" />
-                <span>Business Partner</span>
-              </button>
-            )}
+
 
             {/* Navigation Tabs */}
             <nav className={`flex items-center gap-1 p-1 rounded-xl border ${
