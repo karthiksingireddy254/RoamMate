@@ -1,5 +1,5 @@
 /**
- * PlaceProvider - Location-First Real-Time Vehicle Emergency & Discovery Engine backed by Live Maps & Supabase PostgreSQL
+ * PlaceProvider - Accurate Vehicle Emergency & Discovery Engine backed by Live Maps & Supabase PostgreSQL
  */
 
 const axios = require('axios');
@@ -21,36 +21,31 @@ class PlaceProvider {
     this.memoryCache = new Map();
   }
 
-  // Dual-Source Aggregation: Combine RoamMate Registered Businesses + Live External Map Data
+  // Fetch ONLY vehicle-related emergency services from Supabase PostgreSQL or live Google / OpenStreetMap Places API
   async getNearbyServices({ lat, lng, radiusKm = 10, category = 'all', keyword = '' }) {
     let places = [];
 
     try {
-      // 1. Query Supabase PostgreSQL places (SOURCE 1: RoamMate Database)
+      // 1. Query Supabase PostgreSQL places (STRICT VEHICLE CATEGORIES ONLY)
       const res = await db.query(`SELECT * FROM places WHERE category IN ('service', 'towing', 'fuel', 'ev', 'rental');`);
       if (res.rows && res.rows.length > 0) {
-        places = res.rows.map(row => {
-          const isRegistered = row.provider_id && row.provider_id.trim() !== '';
-          return {
-            id: row.id,
-            name: row.name,
-            category: row.category,
-            subcategory: row.subcategory || 'Vehicle Service',
-            lat: parseFloat(row.lat),
-            lng: parseFloat(row.lng),
-            address: row.address,
-            rating: parseFloat(row.rating) || 4.8,
-            reviewsCount: row.reviews_count || 45,
-            status: row.status || 'Available Now',
-            phone: row.phone || '+91 1800 102 1100',
-            amenities: typeof row.amenities === 'string' ? JSON.parse(row.amenities) : (row.amenities || []),
-            description: row.description,
-            tags: typeof row.tags === 'string' ? JSON.parse(row.tags) : (row.tags || []),
-            image: row.image || CATEGORY_IMAGES[row.category] || CATEGORY_IMAGES.service,
-            sourceType: isRegistered ? 'ROAMMATE_REGISTERED' : 'MAP_DATA',
-            sourceLabel: isRegistered ? '🏢 RoamMate Registered' : '🌐 Map Data'
-          };
-        });
+        places = res.rows.map(row => ({
+          id: row.id,
+          name: row.name,
+          category: row.category,
+          subcategory: row.subcategory,
+          lat: parseFloat(row.lat),
+          lng: parseFloat(row.lng),
+          address: row.address,
+          rating: parseFloat(row.rating) || 4.5,
+          reviewsCount: row.reviews_count || 50,
+          status: row.status || 'Available Now',
+          phone: row.phone,
+          amenities: typeof row.amenities === 'string' ? JSON.parse(row.amenities) : (row.amenities || []),
+          description: row.description,
+          tags: typeof row.tags === 'string' ? JSON.parse(row.tags) : (row.tags || []),
+          image: row.image || CATEGORY_IMAGES[row.category] || CATEGORY_IMAGES.service
+        }));
       }
     } catch (err) {
       console.warn('Database query fallback:', err.message);
@@ -62,11 +57,11 @@ class PlaceProvider {
       distanceKm: getDistanceKm(lat, lng, p.lat, p.lng)
     }));
 
-    // Filter by spatial radius using Haversine formula
+    // Filter by spatial radius
     result = filterByRadius(result, lat, lng, radiusKm);
 
-    // 2. Fetch Live External Real-World Places Data (SOURCE 2: External Map Data)
-    if (result.length < 8 || hasKeyword) {
+    // Live search query from Overpass / OpenStreetMap / Google Maps data if results < 10
+    if (result.length < 10 || hasKeyword) {
       const livePlaces = await this.searchLiveVehicleEmergencyServices(lat, lng, radiusKm, keyword);
       for (const p of livePlaces) {
         if (!result.some(existing => existing.name.toLowerCase() === p.name.toLowerCase() || (Math.abs(existing.lat - p.lat) < 0.0005 && Math.abs(existing.lng - p.lng) < 0.0005))) {
@@ -76,7 +71,7 @@ class PlaceProvider {
       }
     }
 
-    // Dynamic vehicle emergency fallback if results < 3
+    // Dynamic vehicle emergency fallback if still < 3
     if (result.length < 3) {
       const dynamicFallback = this.generateDynamicVehicleServices(lat, lng, radiusKm);
       for (const newP of dynamicFallback) {
@@ -104,7 +99,7 @@ class PlaceProvider {
       });
     }
 
-    // Keyword filtering
+    // Keyword search filtering
     if (hasKeyword) {
       const kw = keyword.trim().toLowerCase();
       result = result.filter(place => {
@@ -120,16 +115,17 @@ class PlaceProvider {
       });
     }
 
-    // Sort strictly by Haversine distance from user's selected location center
+    // Sort by distance from user
     return result.sort((a, b) => a.distanceKm - b.distanceKm);
   }
 
-  // Fetch accurate live vehicle emergency services around center coordinates using Nominatim API
+  // Fetch accurate live vehicle emergency services around center coordinates using Nominatim & Overpass APIs
   async searchLiveVehicleEmergencyServices(centerLat, centerLng, radiusKm = 10, keyword = '') {
     const livePlaces = [];
     const radiusMeters = Math.min(radiusKm * 1000, 25000);
 
     try {
+      // 1. Query Nominatim for named vehicle emergency services around location
       const queryTerm = keyword ? `${keyword} vehicle mechanic towing fuel` : 'fuel station mechanic garage towing';
       const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryTerm)}&lat=${centerLat}&lon=${centerLng}&radius=${radiusMeters}&limit=12`;
       
@@ -159,11 +155,9 @@ class PlaceProvider {
               reviewsCount: 180 + idx * 25,
               status: 'Available Now',
               phone: '+91 1800 102 1100',
-              amenities: ['Live Map Location', '24x7 Roadside Assistance', 'Public Access'],
+              amenities: ['Accurate Map Location', '24x7 Roadside Assistance', 'Verified Access'],
               description: item.display_name,
               tags: [category, 'vehicle', 'live_map', 'accurate'],
-              sourceType: 'MAP_DATA',
-              sourceLabel: '🌐 Map Data',
               distanceKm: getDistanceKm(centerLat, centerLng, lat, lng)
             });
           }
@@ -182,7 +176,7 @@ class PlaceProvider {
     if (text.includes('ev') || text.includes('charger') || text.includes('charging') || text.includes('tata power') || text.includes('ather')) return 'ev';
     if (text.includes('tow') || text.includes('towing') || text.includes('breakdown') || text.includes('recovery') || text.includes('crane')) return 'towing';
     if (text.includes('rental') || text.includes('rent') || text.includes('scooter') || text.includes('bike rental')) return 'rental';
-    return 'service';
+    return 'service'; // Default to Mechanic & Repair Garages
   }
 
   async getCategoryCounts(lat, lng, radiusKm = 10) {
@@ -214,8 +208,6 @@ class PlaceProvider {
         const row = res.rows[0];
         if (!ALLOWED_VEHICLE_CATEGORIES.includes(row.category)) return null;
 
-        const isRegistered = row.provider_id && row.provider_id.trim() !== '';
-
         return {
           id: row.id,
           name: row.name,
@@ -224,16 +216,14 @@ class PlaceProvider {
           lat: parseFloat(row.lat),
           lng: parseFloat(row.lng),
           address: row.address,
-          rating: parseFloat(row.rating) || 4.8,
+          rating: parseFloat(row.rating) || 4.5,
           reviewsCount: row.reviews_count || 50,
           status: row.status || 'Available Now',
           phone: row.phone,
           amenities: typeof row.amenities === 'string' ? JSON.parse(row.amenities) : (row.amenities || []),
           description: row.description,
           tags: typeof row.tags === 'string' ? JSON.parse(row.tags) : (row.tags || []),
-          image: row.image || CATEGORY_IMAGES[row.category] || CATEGORY_IMAGES.service,
-          sourceType: isRegistered ? 'ROAMMATE_REGISTERED' : 'MAP_DATA',
-          sourceLabel: isRegistered ? '🏢 RoamMate Registered' : '🌐 Map Data'
+          image: row.image || CATEGORY_IMAGES[row.category] || CATEGORY_IMAGES.service
         };
       }
     } catch (err) {
@@ -252,7 +242,7 @@ class PlaceProvider {
         ON CONFLICT (id) DO NOTHING;
       `, [
         place.id, place.name, place.category, place.subcategory || '', place.lat, place.lng,
-        place.address || '', place.rating || 4.8, place.reviewsCount || 50, place.status || 'Available Now', place.phone || '',
+        place.address || '', place.rating || 4.5, place.reviewsCount || 50, place.status || 'Available Now', place.phone || '',
         JSON.stringify(place.amenities || []), place.description || '', JSON.stringify(place.tags || []), place.image || ''
       ]);
     } catch (err) {
@@ -291,8 +281,6 @@ class PlaceProvider {
         amenities: tmpl.amenities,
         description: `Verified vehicle emergency ${tmpl.subcategory} service located near your location.`,
         tags: [tmpl.category, tmpl.subcategory.toLowerCase()],
-        sourceType: 'MAP_DATA',
-        sourceLabel: '🌐 Map Data',
         distanceKm: getDistanceKm(centerLat, centerLng, lat, lng)
       };
     });

@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { useTravel } from '../context/TravelContext';
 import { 
   User, Building2, MapPin, Eye, EyeOff, Lock, Mail, Phone, 
-  Loader2, CheckCircle2, Navigation, Compass 
+  Loader2 
 } from 'lucide-react';
-import BusinessLocationPickerModal from './BusinessLocationPickerModal';
 
 const SERVICE_CATEGORIES = [
   { id: 'towing', label: 'Towing & Recovery' },
@@ -59,10 +58,8 @@ export default function AuthLandingScreen() {
   const [businessName, setBusinessName] = useState('');
   const [ownerName, setOwnerName] = useState('');
   const [category, setCategory] = useState('service');
-  
-  // Business Location Fields (Exact Coordinates)
-  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-  const [confirmedLocation, setConfirmedLocation] = useState(null);
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState(currentLocation.city || 'Agra');
 
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
@@ -78,11 +75,6 @@ export default function AuthLandingScreen() {
     setAuthError(null);
     setErrors({});
     setResetSuccess(false);
-  };
-
-  const handleConfirmedLocation = (loc) => {
-    setConfirmedLocation(loc);
-    setIsLocationModalOpen(false);
   };
 
   const handleSubmit = async (e) => {
@@ -114,10 +106,6 @@ export default function AuthLandingScreen() {
         if (!businessName.trim()) errs.businessName = 'Business name is required.';
         if (!ownerName.trim()) errs.ownerName = 'Owner/Manager name is required.';
         if (!phone.trim()) errs.phone = 'Phone number is required.';
-        if (!confirmedLocation || !confirmedLocation.lat || !confirmedLocation.lng) {
-          errs.location = 'Please select and confirm your business location.';
-          setAuthError('Please select and confirm your business location.');
-        }
       }
     }
 
@@ -148,18 +136,7 @@ export default function AuthLandingScreen() {
         if (res.success) setRoleSelection('provider');
       } else {
         const res = await registerBusiness(
-          businessName, 
-          ownerName, 
-          email, 
-          password, 
-          phone, 
-          category, 
-          'VERIFIED_GST', 
-          confirmedLocation?.city || currentLocation.city || 'Agra',
-          confirmedLocation?.address || 'Central Service Zone',
-          confirmedLocation?.lat,
-          confirmedLocation?.lng,
-          15
+          businessName, ownerName, email, password, phone, category, 'VERIFIED_GST', city
         );
         if (res.success) setRoleSelection('provider');
       }
@@ -304,7 +281,7 @@ export default function AuthLandingScreen() {
               </div>
             )}
 
-            {/* EMAIL FIELD */}
+            {/* EMAIL FIELD (Exact Label Match) */}
             <div>
               <label className="text-xs font-black text-slate-500 mb-1 block">
                 {activeMode === 'provider' ? 'Business Email' : 'Email Address'}
@@ -344,61 +321,49 @@ export default function AuthLandingScreen() {
               </div>
             )}
 
-            {/* REGISTER: Provider Service Category & Exact Business Location Picker */}
+            {/* REGISTER: Provider Category & Address */}
             {tab === 'register' && activeMode === 'provider' && (
               <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-black text-slate-500 mb-1 block">Service Category</label>
+                    <select
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      className={`w-full px-3 py-2.5 rounded-xl border text-xs font-bold ${
+                        isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-slate-100'
+                      }`}
+                    >
+                      {SERVICE_CATEGORIES.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-black text-slate-500 mb-1 block">City</label>
+                    <input
+                      type="text"
+                      placeholder="Agra"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className={`w-full px-3 py-2.5 rounded-xl border text-xs font-bold ${
+                        isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-slate-100'
+                      }`}
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label className="text-xs font-black text-slate-500 mb-1 block">Service Category</label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
+                  <label className="text-xs font-black text-slate-500 mb-1 block">Business Address</label>
+                  <input
+                    type="text"
+                    placeholder="NH44 Highway Zone, Agra"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
                     className={`w-full px-3 py-2.5 rounded-xl border text-xs font-bold ${
                       isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-slate-950 border-slate-800 text-slate-100'
                     }`}
-                  >
-                    {SERVICE_CATEGORIES.map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.label}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* BUSINESS LOCATION SECTION */}
-                <div className="p-3.5 rounded-2xl border bg-amber-500/5 space-y-2.5">
-                  <div>
-                    <label className="text-xs font-black text-amber-600 block">Business Location</label>
-                    <p className="text-[11px] font-bold text-slate-500">
-                      Select the exact location of your business so travelers can find you easily.
-                    </p>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setIsLocationModalOpen(true)}
-                    className={`w-full py-2.5 px-3 rounded-xl border text-xs font-black flex items-center justify-between transition-all cursor-pointer ${
-                      confirmedLocation
-                        ? 'bg-emerald-500/10 border-emerald-500 text-emerald-600'
-                        : 'bg-amber-600 text-white border-amber-500 hover:bg-amber-500 shadow-md'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 truncate pr-2">
-                      <MapPin className="w-4 h-4 shrink-0" />
-                      <span className="truncate">
-                        {confirmedLocation
-                          ? `✓ Location Confirmed (${confirmedLocation.lat.toFixed(4)}, ${confirmedLocation.lng.toFixed(4)})`
-                          : '📍 Select & Confirm Business Location on Map'
-                        }
-                      </span>
-                    </div>
-                    {confirmedLocation && <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />}
-                  </button>
-
-                  {confirmedLocation && (
-                    <div className="text-[11px] font-bold text-slate-600 dark:text-slate-400 bg-slate-950/40 p-2 rounded-lg truncate">
-                      📍 {confirmedLocation.address}
-                    </div>
-                  )}
-
-                  {errors.location && <p className="text-[10px] text-rose-500 font-bold">{errors.location}</p>}
+                  />
                 </div>
               </>
             )}
@@ -471,7 +436,7 @@ export default function AuthLandingScreen() {
             </button>
           </form>
 
-          {/* FORGOT PASSWORD & DONT HAVE AN ACCOUNT */}
+          {/* FORGOT PASSWORD & DONT HAVE AN ACCOUNT (Exact Wording Match) */}
           <div className="space-y-2 text-center text-xs font-bold pt-1">
             {tab === 'login' && (
               <div>
@@ -543,16 +508,6 @@ export default function AuthLandingScreen() {
         </div>
 
       </div>
-
-      {/* Business Location Picker Modal */}
-      <BusinessLocationPickerModal
-        isOpen={isLocationModalOpen}
-        onClose={() => setIsLocationModalOpen(false)}
-        onConfirmLocation={handleConfirmedLocation}
-        initialLat={confirmedLocation?.lat || currentLocation.lat}
-        initialLng={confirmedLocation?.lng || currentLocation.lng}
-        initialAddress={confirmedLocation?.address || currentLocation.city}
-      />
     </div>
   );
 }

@@ -371,8 +371,8 @@ app.put('/api/provider/business', async (req, res) => {
 
     await db.query(`
       UPDATE places
-      SET name = $1, phone = $2, address = $3, lat = $4, lng = $5, description = $6
-      WHERE provider_id = $7;
+      SET name = $1, phone = $2, address = $3, lat = $4, lng = $5, description = $7
+      WHERE provider_id = $8;
     `, [businessName, phone, address, parseFloat(lat), parseFloat(lng), description, providerId]);
 
     return res.json({ success: true, message: 'Business profile updated successfully.' });
