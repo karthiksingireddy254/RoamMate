@@ -139,55 +139,17 @@ export default function Navbar() {
 
 
 
-            {/* Navigation Tabs */}
-            <nav className={`flex items-center gap-1 p-1 rounded-xl border ${
-              isLight ? 'bg-slate-100 border-slate-300' : 'bg-slate-900 border-slate-800'
-            }`}>
-              <button
-                onClick={() => setActiveTab('discover')}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-black transition-colors ${
-                  activeTab === 'discover' ? 'bg-sky-600 text-white shadow-sm' : isLight ? 'text-slate-700 hover:text-black' : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <Compass className="w-3.5 h-3.5" />
-                <span>Discover</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  requireAuth(() => setIsHelpMeModalOpen(true), 'Please sign in or create an account to trigger Help Me emergency assistance.');
-                }}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg font-black bg-rose-600 hover:bg-rose-500 text-white transition-colors cursor-pointer shadow-sm"
-                title="Help Me Now emergency assistance"
-              >
-                <ShieldAlert className="w-3.5 h-3.5 text-white animate-bounce" />
-                <span>Help</span>
-              </button>
-            </nav>
-
-            {/* View Switcher */}
-            <div className={`hidden sm:flex items-center p-1 rounded-xl border ${
-              isLight ? 'bg-slate-100 border-slate-300' : 'bg-slate-900 border-slate-800'
-            }`}>
-              <button
-                onClick={() => setViewMode('map')}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-black text-xs transition-colors ${
-                  viewMode === 'map' ? 'bg-sky-600 text-white shadow' : isLight ? 'text-slate-700 hover:text-black' : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <Map className="w-3.5 h-3.5" />
-                <span>Map</span>
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-black text-xs transition-colors ${
-                  viewMode === 'list' ? 'bg-sky-600 text-white shadow' : isLight ? 'text-slate-700 hover:text-black' : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                <List className="w-3.5 h-3.5" />
-                <span>List</span>
-              </button>
-            </div>
+            {/* Emergency Help Button */}
+            <button
+              onClick={() => {
+                requireAuth(() => setIsHelpMeModalOpen(true), 'Please sign in or create an account to trigger Help Me emergency assistance.');
+              }}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl font-black bg-rose-600 hover:bg-rose-500 text-white transition-colors cursor-pointer shadow-md text-xs"
+              title="Help Me Now emergency assistance"
+            >
+              <ShieldAlert className="w-3.5 h-3.5 text-white animate-bounce" />
+              <span>Help</span>
+            </button>
 
             {/* Traveler Auth Button */}
             {user ? (
