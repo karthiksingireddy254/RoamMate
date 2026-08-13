@@ -1,150 +1,10 @@
 /**
- * DbInit - Supabase PostgreSQL Database Table Migration & Real-World Google Maps Places Dataset
+ * DbInit - Supabase PostgreSQL Database Table Migration & Vehicle Services Dataset
  */
 
 const db = require('../db');
 
-const SEED_PLACES = [
-  // --- ACCOMMODATION (stay) ---
-  {
-    id: 'stay-01',
-    name: 'Grand Hyatt & Heritage Resort',
-    category: 'stay',
-    subcategory: '5-Star Resort',
-    lat: 15.4589,
-    lng: 73.8560,
-    address: 'Bambolim Bay Promenade, North Goa, 403201',
-    rating: 4.8,
-    reviews_count: 3420,
-    status: 'Open 24 Hours',
-    phone: '+91 832 710 1234',
-    amenities: JSON.stringify(['Infinity Pool', 'Spa & Wellness', 'Private Beach Access', 'Free WiFi', 'Fine Dining']),
-    description: 'Up-to-date luxury 5-star resort with sea view suites, lagoon pools, and spa.',
-    tags: JSON.stringify(['luxury', 'resort', 'stay', 'hotel', 'goa']),
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&auto=format&fit=crop&q=80'
-  },
-  {
-    id: 'stay-02',
-    name: 'Taj Falaknuma Palace Hotel',
-    category: 'stay',
-    subcategory: 'Heritage Palace Hotel',
-    lat: 17.3315,
-    lng: 78.4673,
-    address: 'Engine Bowli, Falaknuma, Hyderabad, Telangana, 500053',
-    rating: 4.9,
-    reviews_count: 4890,
-    status: 'Open 24 Hours',
-    phone: '+91 40 6629 8585',
-    amenities: JSON.stringify(['Nizam Heritage Suites', 'Royal Dining', 'High Tea Lounge', 'Butler Service']),
-    description: 'Iconic 19th-century royal palace hotel overlooking the historic city of Hyderabad.',
-    tags: JSON.stringify(['heritage', 'palace', 'luxury', 'hyderabad']),
-    image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=600&auto=format&fit=crop&q=80'
-  },
-  {
-    id: 'stay-03',
-    name: 'Zostel Backpacker Hostel & Cafe',
-    category: 'stay',
-    subcategory: 'Hostel',
-    lat: 15.5492,
-    lng: 73.7551,
-    address: 'Calangute - Anjuna Road, Anjuna, Goa, 403509',
-    rating: 4.7,
-    reviews_count: 1820,
-    status: 'Open 24 Hours',
-    phone: '+91 78278 43191',
-    amenities: JSON.stringify(['Backpacker Dorms', 'Shared Kitchen', 'Co-Working Lounge', 'Free High Speed WiFi']),
-    description: 'Vibrant backpacker hostel with community vibe, rooftop cafe, and bike parking.',
-    tags: JSON.stringify(['hostel', 'budget', 'backpacker', 'goa']),
-    image: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=600&auto=format&fit=crop&q=80'
-  },
-  {
-    id: 'stay-04',
-    name: 'Marriott Executive Suites & Convention Center',
-    category: 'stay',
-    subcategory: 'Business Hotel',
-    lat: 17.6200,
-    lng: 78.4800,
-    address: 'NH44 Highway Corridor, Near Medchal Ring Road, Telangana, 501400',
-    rating: 4.6,
-    reviews_count: 940,
-    status: 'Open 24 Hours',
-    phone: '+91 40 4567 8900',
-    amenities: JSON.stringify(['Executive Suites', 'Pool', 'Conference Rooms', 'Airport Shuttle']),
-    description: 'Modern luxury business hotel located close to Medchal highway and Outer Ring Road.',
-    tags: JSON.stringify(['hotel', 'business', 'medchal', 'hyderabad']),
-    image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=600&auto=format&fit=crop&q=80'
-  },
-
-  // --- FOOD & RESTAURANTS (food) ---
-  {
-    id: 'food-01',
-    name: 'Bawarchi Biryani & Heritage Restaurant',
-    category: 'food',
-    subcategory: 'Authentic Hyderabadi Dining',
-    lat: 17.4062,
-    lng: 78.4983,
-    address: 'RTC X Roads, Chikkadpally, Hyderabad, Telangana, 500020',
-    rating: 4.7,
-    reviews_count: 18450,
-    status: 'Open now (11:30 AM - 11:30 PM)',
-    phone: '+91 40 2763 4444',
-    amenities: JSON.stringify(['Hyderabadi Dum Biryani', 'Mutton Haleem', 'Family Seating', 'Takeaway']),
-    description: 'World-famous authentic Hyderabadi Dum Biryani restaurant established in 1997.',
-    tags: JSON.stringify(['biryani', 'restaurant', 'hyderabad', 'food']),
-    image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&auto=format&fit=crop&q=80'
-  },
-  {
-    id: 'food-02',
-    name: 'Paradise Restaurant & Food Court',
-    category: 'food',
-    subcategory: 'Multispecialty Restaurant',
-    lat: 17.6250,
-    lng: 78.4820,
-    address: 'Medchal Main Road Junction, Medchal, Telangana, 501400',
-    rating: 4.6,
-    reviews_count: 8200,
-    status: 'Open now (11:00 AM - 11:00 PM)',
-    phone: '+91 40 2780 2222',
-    amenities: JSON.stringify(['Dum Biryani', 'North Indian', 'Air Conditioned Dining', 'Card Payment']),
-    description: 'Popular heritage food destination serving Dum Biryani, Kebabs, and Desserts in Medchal.',
-    tags: JSON.stringify(['restaurant', 'medchal', 'biryani', 'food']),
-    image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&auto=format&fit=crop&q=80'
-  },
-  {
-    id: 'food-03',
-    name: 'Britto\'s Beach Shack & Seafood Restaurant',
-    category: 'food',
-    subcategory: 'Beach Shack & Restaurant',
-    lat: 15.5558,
-    lng: 73.7517,
-    address: 'Baga Beach, Calangute, North Goa, 403516',
-    rating: 4.5,
-    reviews_count: 14200,
-    status: 'Open now (8:30 AM - 12:00 AM)',
-    phone: '+91 832 227 7339',
-    amenities: JSON.stringify(['Beachfront Dining', 'Fresh Seafood Thali', 'Cocktail Bar', 'Live Music']),
-    description: 'Iconic beachfront shack on Baga Beach famous for Goan fish curry thali and sea view dining.',
-    tags: JSON.stringify(['beachshack', 'seafood', 'baga', 'goa']),
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80'
-  },
-  {
-    id: 'food-04',
-    name: 'Third Wave Coffee & Specialty Espresso Bar',
-    category: 'food',
-    subcategory: 'Cafe',
-    lat: 17.4375,
-    lng: 78.4482,
-    address: 'Road No. 36, Jubilee Hills, Hyderabad, Telangana, 500033',
-    rating: 4.8,
-    reviews_count: 1420,
-    status: 'Open now (8:00 AM - 11:00 PM)',
-    phone: '+91 80 4710 8888',
-    amenities: JSON.stringify(['Specialty Pour Over', 'Artisan Pastries', 'High Speed WiFi', 'Outdoor Seating']),
-    description: 'Top-rated specialty coffee house serving artisanal cold brews, sourdough bakes, and lattes.',
-    tags: JSON.stringify(['cafe', 'coffee', 'jubileehills', 'hyderabad']),
-    image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&auto=format&fit=crop&q=80'
-  },
-
+const SEED_VEHICLE_SERVICES = [
   // --- FUEL STATIONS (fuel) ---
   {
     id: 'fuel-01',
@@ -158,7 +18,7 @@ const SEED_PLACES = [
     reviews_count: 850,
     status: 'Open 24 Hours',
     phone: '+91 94400 12345',
-    amenities: JSON.stringify(['XP95 Petrol', 'High Speed Diesel', 'Air Pressure checking', 'Dhaba Dining', 'Clean Toilet']),
+    amenities: JSON.stringify(['XP95 Petrol', 'High Speed Diesel', 'Air Pressure Checking', 'Clean Washroom', '24x7 Card Accepted']),
     description: 'Major 24-hour Swagat highway fuel plaza with automated pumps and nitrogen air.',
     tags: JSON.stringify(['fuel', 'petrol', 'diesel', 'medchal', '24x7']),
     image: 'https://images.unsplash.com/photo-1527018601619-a508a2be00cd?w=600&auto=format&fit=crop&q=80'
@@ -179,6 +39,23 @@ const SEED_PLACES = [
     description: 'Central fuel station in Panaji city center equipped with digital payments and air checking.',
     tags: JSON.stringify(['fuel', 'petrol', 'panaji', 'goa']),
     image: 'https://images.unsplash.com/photo-1545454675-3531b543be5d?w=600&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'fuel-03',
+    name: 'BPCL Smart Auto Fuel & Nitrogen Center',
+    category: 'fuel',
+    subcategory: '24x7 Fuel Station',
+    lat: 17.4420,
+    lng: 78.3850,
+    address: 'Gachibowli Main Road, Cyberabad, Hyderabad, 500032',
+    rating: 4.7,
+    reviews_count: 1240,
+    status: 'Open 24 Hours',
+    phone: '+91 40 2300 4545',
+    amenities: JSON.stringify(['Speed Petrol', 'Hi-Speed Diesel', 'Nitrogen Air Inflation', 'EV Quick Charging']),
+    description: 'Modern BPCL automated smart station with digital pay and quick lube service.',
+    tags: JSON.stringify(['fuel', 'petrol', 'gachibowli', 'hyderabad']),
+    image: 'https://images.unsplash.com/photo-1527018601619-a508a2be00cd?w=600&auto=format&fit=crop&q=80'
   },
 
   // --- EV CHARGING HUBS (ev) ---
@@ -216,11 +93,28 @@ const SEED_PLACES = [
     tags: JSON.stringify(['ev', 'ather', 'medchal', 'scooter']),
     image: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=600&auto=format&fit=crop&q=80'
   },
+  {
+    id: 'ev-03',
+    name: 'Jio-bp pulse 150kW Ultra Fast EV Charger',
+    category: 'ev',
+    subcategory: 'Superfast Charger',
+    lat: 15.5480,
+    lng: 73.7610,
+    address: 'Chogm Road, Porvorim, North Goa, 403521',
+    rating: 4.9,
+    reviews_count: 310,
+    status: 'Available 24 Hours',
+    phone: '1800 891 9000',
+    amenities: JSON.stringify(['150kW Ultra Fast DC', 'Multi-Vehicle Simultaneous Charge', 'Cafeteria Onsite']),
+    description: 'High-power ultra-fast EV charging station supporting all electric cars and SUVs.',
+    tags: JSON.stringify(['ev', 'jio-bp', 'goa', 'fastcharger']),
+    image: 'https://images.unsplash.com/photo-1563720223185-11003d516935?w=600&auto=format&fit=crop&q=80'
+  },
 
-  // --- MECHANICS & BIKE REPAIR (service) ---
+  // --- MECHANICS & REPAIR GARAGES (service) ---
   {
     id: 'service-01',
-    name: 'Express Bike & Scooter Doctor',
+    name: 'Express Bike & Scooter Doctor Garage',
     category: 'service',
     subcategory: 'Bike Mechanic',
     lat: 17.6280,
@@ -237,7 +131,7 @@ const SEED_PLACES = [
   },
   {
     id: 'service-02',
-    name: 'Royal Enfield Authorised Service Center',
+    name: 'Royal Enfield Authorised Service Workshop',
     category: 'service',
     subcategory: 'Superbike Garage',
     lat: 15.4920,
@@ -252,11 +146,28 @@ const SEED_PLACES = [
     tags: JSON.stringify(['mechanic', 'royalenfield', 'goa', 'bike']),
     image: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=600&auto=format&fit=crop&q=80'
   },
+  {
+    id: 'service-03',
+    name: 'Bosch Car Service Center & Multi-Brand Garage',
+    category: 'service',
+    subcategory: 'Car Service Center',
+    lat: 17.4390,
+    lng: 78.4410,
+    address: 'Road No. 12, Banjara Hills, Hyderabad, Telangana, 500034',
+    rating: 4.8,
+    reviews_count: 1450,
+    status: 'Open now (8:30 AM - 8:00 PM)',
+    phone: '+91 40 2335 9999',
+    amenities: JSON.stringify(['Computerized Engine Diagnostics', 'Wheel Alignment', 'AC Gas Refill', 'Brake Pad Replacement']),
+    description: 'Authorized multi-brand car repair workshop with certified mechanics and genuine spares.',
+    tags: JSON.stringify(['mechanic', 'car', 'garage', 'banjarahills', 'hyderabad']),
+    image: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=600&auto=format&fit=crop&q=80'
+  },
 
   // --- TOWING & ROADSIDE RESCUE (towing) ---
   {
     id: 'towing-01',
-    name: 'National 24x7 Breakdown Towing & Recovery',
+    name: 'National 24x7 Highway Towing & Flatbed Recovery',
     category: 'towing',
     subcategory: 'Flatbed Tow Truck',
     lat: 17.6150,
@@ -271,170 +182,64 @@ const SEED_PLACES = [
     tags: JSON.stringify(['towing', 'breakdown', 'recovery', '24x7', 'medchal']),
     image: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&auto=format&fit=crop&q=80'
   },
-
-  // --- MEDICAL & HOSPITALS (medical) ---
   {
-    id: 'medical-01',
-    name: 'KIMS Emergency Medical Center & Hospital',
-    category: 'medical',
-    subcategory: 'Multispecialty Hospital',
-    lat: 17.6350,
-    lng: 78.4890,
-    address: 'Medchal Ring Road Highway, Medchal, Telangana, 501400',
-    rating: 4.7,
-    reviews_count: 2450,
-    status: 'Emergency Open 24 Hours',
-    phone: '+91 40 4488 5000',
-    amenities: JSON.stringify(['24x7 Trauma Care', 'Emergency ER', 'Ambulance Call Service', '24 Hour Pharmacy']),
-    description: 'Super-specialty hospital with 24-hour emergency trauma care unit and pharmacy.',
-    tags: JSON.stringify(['hospital', 'emergency', 'medical', 'medchal']),
-    image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600&auto=format&fit=crop&q=80'
-  },
-  {
-    id: 'medical-02',
-    name: 'Apollo Hospital Jubilee Hills 24x7 ER',
-    category: 'medical',
-    subcategory: 'Super Specialty Hospital',
-    lat: 17.4320,
-    lng: 78.4070,
-    address: 'Road No. 92, Jubilee Hills, Hyderabad, Telangana, 500033',
+    id: 'towing-02',
+    name: 'Coastal Roadside Assistance & Towing Services',
+    category: 'towing',
+    subcategory: '24x7 Towing Squad',
+    lat: 15.5450,
+    lng: 73.7650,
+    address: 'Calangute - Mapusa Road, North Goa, 403507',
     rating: 4.8,
-    reviews_count: 8900,
-    status: 'Emergency Open 24 Hours',
-    phone: '+91 40 2360 7777',
-    amenities: JSON.stringify(['24x7 Cardiac ER', 'Air Ambulance', 'Blood Bank', 'Trauma Center']),
-    description: 'Premier super specialty hospital in Hyderabad offering round-the-clock emergency medical response.',
-    tags: JSON.stringify(['hospital', 'apollo', 'hyderabad', 'medical']),
-    image: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=600&auto=format&fit=crop&q=80'
-  },
-
-  // --- TOURIST ATTRACTIONS & LANDMARKS (explore) ---
-  {
-    id: 'explore-01',
-    name: 'Taj Mahal - UNESCO World Heritage Site',
-    category: 'explore',
-    subcategory: 'World Heritage Landmark',
-    lat: 27.1751,
-    lng: 78.0421,
-    address: 'Dharmapuri, Forest Colony, Tajganj, Agra, Uttar Pradesh, 282001',
-    rating: 4.9,
-    reviews_count: 142000,
-    status: 'Open (6:00 AM - 6:30 PM)',
-    phone: '+91 562 222 6431',
-    amenities: JSON.stringify(['Guided Heritage Tour', 'Photography Spot', 'Wheelchair Access', 'Electric Cart']),
-    description: '17th-century white marble mausoleum built by Shah Jahan, famous as one of the 7 Wonders of the World.',
-    tags: JSON.stringify(['tajmahal', 'agra', 'heritage', 'monument', 'tourist']),
-    image: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=600&auto=format&fit=crop&q=80'
-  },
-  {
-    id: 'explore-02',
-    name: 'Charminar Heritage Monument & Bazaar',
-    category: 'explore',
-    subcategory: 'Historic Monument',
-    lat: 17.3616,
-    lng: 78.4747,
-    address: 'Charminar Road, Char Kaman, Ghansi Bazaar, Hyderabad, 500002',
-    rating: 4.8,
-    reviews_count: 98000,
-    status: 'Open (9:00 AM - 5:30 PM)',
-    phone: '+91 40 2452 2990',
-    amenities: JSON.stringify(['Panoramic Minaret View', 'Laad Bazaar Shopping', 'Heritage Walk', 'Local Street Food']),
-    description: 'Iconic 16th-century mosque and monument standing as the premier landmark of Hyderabad.',
-    tags: JSON.stringify(['charminar', 'hyderabad', 'monument', 'heritage']),
-    image: 'https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=600&auto=format&fit=crop&q=80'
-  },
-  {
-    id: 'explore-03',
-    name: 'Aguada Fort & Historic Ocean Lighthouse',
-    category: 'explore',
-    subcategory: '17th Century Portuguese Fort',
-    lat: 15.4925,
-    lng: 73.7736,
-    address: 'Sinquerim, Candolim, North Goa, 403515',
-    rating: 4.7,
-    reviews_count: 48900,
-    status: 'Open (9:30 AM - 6:00 PM)',
-    phone: '+91 832 249 4200',
-    amenities: JSON.stringify(['Panoramic Sunset Vistas', 'Historic Lighthouse', 'Ocean View Cliff', 'Guided Tour']),
-    description: '17th-century Portuguese fortress and lighthouse offering panoramic Arabian Sea sunset views.',
-    tags: JSON.stringify(['fort', 'aguada', 'goa', 'lighthouse', 'sunset']),
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80'
-  },
-  {
-    id: 'explore-04',
-    name: 'Golconda Fort & Citadel Ramparts',
-    category: 'explore',
-    subcategory: 'Historic Fort & Citadel',
-    lat: 17.3833,
-    lng: 78.4011,
-    address: 'Khair Complex, Ibrahim Bagh, Hyderabad, Telangana, 500008',
-    rating: 4.8,
-    reviews_count: 65000,
-    status: 'Open (9:00 AM - 5:30 PM)',
-    phone: '+91 40 2351 3984',
-    amenities: JSON.stringify(['Acoustic Sound Echo Point', 'Light & Sound Show', 'Royal Vaults', 'Guided Tour']),
-    description: 'Historic medieval fortress famous for its acoustic engineering, royal palaces, and diamond vaults.',
-    tags: JSON.stringify(['golconda', 'fort', 'hyderabad', 'heritage']),
-    image: 'https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?w=600&auto=format&fit=crop&q=80'
-  },
-
-  // --- TRANSPORT TRANSIT HUBS (transport) ---
-  {
-    id: 'transport-01',
-    name: 'Medchal Central Bus Terminus & Transit Hub',
-    category: 'transport',
-    subcategory: 'Bus Terminus',
-    lat: 17.6270,
-    lng: 78.4840,
-    address: 'Medchal Main Road, Medchal mandal, Telangana, 501400',
-    rating: 4.4,
-    reviews_count: 3200,
-    status: 'Open 24 Hours',
-    phone: '139',
-    amenities: JSON.stringify(['Intercity TSRTC Buses', 'Local Express Shuttles', 'Auto Stand', 'Taxi Stand']),
-    description: 'Primary transit bus terminus connecting Medchal to Hyderabad city center, Secunderabad, and Nizamabad.',
-    tags: JSON.stringify(['busstop', 'busstation', 'medchal', 'transport']),
-    image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&auto=format&fit=crop&q=80'
-  },
-  {
-    id: 'transport-02',
-    name: 'Rajiv Gandhi International Airport (HYD)',
-    category: 'transport',
-    subcategory: 'International Airport',
-    lat: 17.2403,
-    lng: 78.4294,
-    address: 'Shamshabad, Hyderabad, Telangana, 500108',
-    rating: 4.8,
-    reviews_count: 85000,
-    status: 'Open 24 Hours',
-    phone: '+91 40 6654 6370',
-    amenities: JSON.stringify(['24x7 Flight Lounge', 'Duty Free Shopping', 'Pushpak Airport Bus', 'Prepaid Taxi']),
-    description: 'World-class international airport serving Hyderabad with round-the-clock domestic & international flights.',
-    tags: JSON.stringify(['airport', 'hyderabad', 'flight', 'transport']),
-    image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&auto=format&fit=crop&q=80'
-  },
-
-  // --- ATMS, PARKING, RESTROOMS, RENTALS & ESSENTIALS ---
-  {
-    id: 'atm-01',
-    name: 'State Bank 24/7 Cash ATM & Kiosk',
-    category: 'atm',
-    subcategory: 'ATM & Banking',
-    lat: 17.6240,
-    lng: 78.4810,
-    address: 'Medchal Market Entrance, Medchal mandal, Telangana, 501400',
-    rating: 4.5,
     reviews_count: 420,
-    status: 'Open 24 Hours',
-    phone: '1800 1234',
-    amenities: JSON.stringify(['24x7 Cash Withdrawal', 'Cardless Cash', 'Deposit Machine', 'AC Booth']),
-    description: '24-hour SBI cash ATM kiosk accepting all national and international debit and credit cards.',
-    tags: JSON.stringify(['atm', 'sbi', 'cash', 'medchal', '24x7']),
-    image: 'https://images.unsplash.com/photo-1601597111158-2fceff292cdc?w=600&auto=format&fit=crop&q=80'
+    status: 'Available 24 Hours',
+    phone: '+91 98225 11223',
+    amenities: JSON.stringify(['Hydraulic Tow Truck', 'Lockout Key Assistance', 'Tyre Change Onsite']),
+    description: 'Instant 24-hour towing service across Goa highways and beach roads.',
+    tags: JSON.stringify(['towing', 'assistance', 'goa', 'rescue']),
+    image: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&auto=format&fit=crop&q=80'
   },
+
+  // --- VEHICLE PARKING (parking) ---
+  {
+    id: 'parking-01',
+    name: 'City Center Multi-Level Automated Parking Plaza',
+    category: 'parking',
+    subcategory: 'Multi-Level Car Parking',
+    lat: 17.4320,
+    lng: 78.4480,
+    address: 'Panjagutta Junction, Hyderabad, Telangana, 500082',
+    rating: 4.6,
+    reviews_count: 1890,
+    status: 'Open 24 Hours',
+    phone: '+91 40 2341 0000',
+    amenities: JSON.stringify(['CCTV Security 24x7', 'Covered Slots', 'FASTag Automated Entry', 'EV Charging Slots']),
+    description: 'Modern 6-storey automated car and bike parking complex with security cameras.',
+    tags: JSON.stringify(['parking', 'car', 'bike', 'hyderabad']),
+    image: 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=600&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'parking-02',
+    name: 'Medchal Market Secure Vehicle Parking',
+    category: 'parking',
+    subcategory: 'Paid Parking Space',
+    lat: 17.6245,
+    lng: 78.4805,
+    address: 'Medchal Main Market Road, Medchal, Telangana, 501400',
+    rating: 4.5,
+    reviews_count: 310,
+    status: 'Open (6:00 AM - 11:00 PM)',
+    phone: '+91 94400 98765',
+    amenities: JSON.stringify(['Two Wheeler Slots', 'Car Bay', 'Guarded Entry']),
+    description: 'Safe parking facility located right next to Medchal market and bus stand.',
+    tags: JSON.stringify(['parking', 'medchal', 'bike']),
+    image: 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=600&auto=format&fit=crop&q=80'
+  },
+
+  // --- VEHICLE RENTALS (rental) ---
   {
     id: 'rental-01',
-    name: 'Tourist Scooter & Bike Rentals',
+    name: 'Tourist Scooter & Bike Rental Agency',
     category: 'rental',
     subcategory: 'Bike & Scooter Rental',
     lat: 15.5420,
@@ -450,21 +255,21 @@ const SEED_PLACES = [
     image: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=600&auto=format&fit=crop&q=80'
   },
   {
-    id: 'essentials-01',
-    name: 'MedPlus 24x7 Chemist & Travel Supermarket',
-    category: 'essentials',
-    subcategory: 'Chemist & Supermarket',
-    lat: 17.6260,
-    lng: 78.4825,
-    address: 'Medchal Main Road Junction, Medchal, Telangana, 501400',
+    id: 'rental-02',
+    name: 'Royal Self Drive Cars & SUV Rentals',
+    category: 'rental',
+    subcategory: 'Car Rental',
+    lat: 17.4410,
+    lng: 78.3820,
+    address: 'HITEC City Metro Station, Hyderabad, 500081',
     rating: 4.7,
-    reviews_count: 780,
-    status: 'Open 24 Hours',
-    phone: '+91 40 6700 6700',
-    amenities: JSON.stringify(['24x7 Medicines', 'Travel Toiletries', 'First Aid Kits', 'Mineral Water']),
-    description: 'All-in-one 24-hour chemist and travel supermarket stocking medicines, snacks, and toiletries.',
-    tags: JSON.stringify(['essentials', 'chemist', 'pharmacy', 'medchal']),
-    image: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=600&auto=format&fit=crop&q=80'
+    reviews_count: 650,
+    status: 'Open (7:00 AM - 10:00 PM)',
+    phone: '+91 40 4012 3456',
+    amenities: JSON.stringify(['Self-Drive Hatchbacks & SUVs', 'Sanitized Vehicles', 'Unlimited Kilometers']),
+    description: 'Premium self-drive car rental agency with Thar, Creta, Swift, and Baleno available.',
+    tags: JSON.stringify(['rental', 'car', 'selfdrive', 'hyderabad']),
+    image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80'
   }
 ];
 
@@ -490,6 +295,7 @@ async function initializeDatabase() {
         description TEXT,
         tags JSONB DEFAULT '[]'::jsonb,
         image TEXT,
+        provider_id VARCHAR(100),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
@@ -520,13 +326,28 @@ async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    await db.query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);`);
 
-    console.log('✅ Supabase PostgreSQL tables verified successfully.');
+    // 4. Create Business Organizations / Service Providers Table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS business_providers (
+        id VARCHAR(100) PRIMARY KEY,
+        business_name VARCHAR(255) NOT NULL,
+        owner_name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        phone VARCHAR(100) NOT NULL,
+        category VARCHAR(50) NOT NULL,
+        license_no VARCHAR(100),
+        city VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
 
-    // Upsert up-to-date verified Google Maps places into Supabase PostgreSQL
-    console.log('🌱 Upserting up-to-date verified Google Maps places into Supabase PostgreSQL...');
-    for (const p of SEED_PLACES) {
+    console.log('✅ Supabase PostgreSQL vehicle database tables verified.');
+
+    // Upsert vehicle-related services into Supabase PostgreSQL
+    console.log('🌱 Upserting vehicle-related services into Supabase PostgreSQL...');
+    for (const p of SEED_VEHICLE_SERVICES) {
       await db.query(`
         INSERT INTO places (id, name, category, subcategory, lat, lng, address, rating, reviews_count, status, phone, amenities, description, tags, image)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
@@ -546,7 +367,7 @@ async function initializeDatabase() {
         p.amenities, p.description, p.tags, p.image
       ]);
     }
-    console.log('🌱 Database updated with up-to-date real-world Google Maps place entries.');
+    console.log('🌱 Database loaded with vehicle-only services.');
 
   } catch (err) {
     console.error('❌ Error initializing PostgreSQL database schema:', err.message);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTravel } from './context/TravelContext';
 import Navbar from './components/Navbar';
 import CategoryBar from './components/CategoryBar';
@@ -10,21 +10,21 @@ import HelpMeNowModal from './components/HelpMeNowModal';
 import LocationPickerModal from './components/LocationPickerModal';
 import UserPreferencesModal from './components/UserPreferencesModal';
 import UserProfileModal from './components/UserProfileModal';
+import BusinessAuthModal from './components/BusinessAuthModal';
 import AiRecommendationBanner from './components/AiRecommendationBanner';
 import OnMyRoutePanel from './components/OnMyRoutePanel';
 import ExploreNearbyView from './components/ExploreNearbyView';
 import AuthModal from './components/AuthModal';
 import { 
-  Compass, Sparkles, Route, Bookmark, ShieldAlert, SlidersHorizontal, MapPin, 
-  Database, Flame, Zap, Wrench, Stethoscope, Hotel, CloudSun 
+  Compass, ShieldAlert, Database, Flame, Wrench, Fuel, Zap, Truck, Car
 } from 'lucide-react';
 
-const QUICK_SITUATIONS = [
-  { id: 'NORMAL', label: 'All Services', icon: Compass, color: 'text-sky-400' },
-  { id: 'OUT_OF_FUEL', label: 'Out of Fuel', icon: Flame, color: 'text-amber-400' },
-  { id: 'BIKE_BREAKDOWN', label: 'Bike Breakdown', icon: Wrench, color: 'text-emerald-400' },
-  { id: 'MEDICAL_EMERGENCY', label: 'Medical ER', icon: Stethoscope, color: 'text-rose-400' },
-  { id: 'NEED_STAY', label: 'Need Hotel', icon: Hotel, color: 'text-indigo-400' }
+const QUICK_VEHICLE_SITUATIONS = [
+  { id: 'NORMAL', label: 'All Vehicle Services', icon: Compass, color: 'text-sky-400' },
+  { id: 'BIKE_BREAKDOWN', label: 'Mechanic / Breakdown', icon: Wrench, color: 'text-emerald-400' },
+  { id: 'OUT_OF_FUEL', label: 'Out of Fuel', icon: Fuel, color: 'text-amber-400' },
+  { id: 'EV_LOW_BATTERY', label: 'EV Charger Needed', icon: Zap, color: 'text-cyan-400' },
+  { id: 'TOWING_RESCUE', label: 'Towing Rescue', icon: Truck, color: 'text-purple-400' }
 ];
 
 export default function App() {
@@ -40,6 +40,7 @@ export default function App() {
     currentLocation,
     radiusKm,
     user,
+    theme,
     requireAuth
   } = useTravel();
 
@@ -48,7 +49,9 @@ export default function App() {
   const savedPlacesList = nearbyServices.filter(p => savedPlaceIds.includes(p.id));
 
   return (
-    <div className="flex flex-col h-screen w-screen ambient-glow-bg text-slate-100 overflow-hidden relative">
+    <div className={`flex flex-col h-screen w-screen overflow-hidden relative transition-colors ${
+      theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-900 text-slate-100'
+    }`}>
       
       {/* Background Ambient Decorative Lights */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-sky-600/10 rounded-full blur-3xl pointer-events-none" />
@@ -57,15 +60,15 @@ export default function App() {
       {/* Primary Top Header Navigation */}
       <Navbar />
 
-      {/* Quick Situation & Live Status Banner (Proactive Enhancement) */}
-      <div className="bg-slate-950/80 border-b border-slate-800/80 px-4 py-1.5 flex items-center justify-between gap-3 overflow-x-auto no-scrollbar z-30">
+      {/* Quick Situation & Live Telemetry Banner */}
+      <div className="bg-slate-950/90 border-b border-slate-800/80 px-4 py-1.5 flex items-center justify-between gap-3 overflow-x-auto no-scrollbar z-30">
         
         {/* Quick Situation Pills */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
           <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider hidden sm:inline">
-            Quick Mode:
+            Quick Emergency Mode:
           </span>
-          {QUICK_SITUATIONS.map((sit) => {
+          {QUICK_VEHICLE_SITUATIONS.map((sit) => {
             const Icon = sit.icon;
             const isActive = activeSituation === sit.id;
             return (
@@ -97,7 +100,7 @@ export default function App() {
 
       </div>
 
-      {/* Horizontal Category Selector Bar */}
+      {/* Horizontal Vehicle Category Bar */}
       <CategoryBar />
 
       {/* Main Responsive Body Area */}
@@ -107,15 +110,15 @@ export default function App() {
         {activeTab === 'discover' && (
           <div className="flex-1 flex flex-col md:flex-row gap-3 w-full h-full overflow-hidden">
             
-            {/* Map Area (Dominant hero element) */}
+            {/* Map Area */}
             <div className={`flex-1 relative h-full transition-all ${viewMode === 'list' ? 'hidden sm:block' : 'block'}`}>
               <MapView />
             </div>
 
-            {/* Side Panel (Desktop) / List Overlay (Mobile) */}
+            {/* Side Panel / List Overlay */}
             <div className={`w-full md:w-96 flex flex-col h-full overflow-y-auto ${viewMode === 'map' ? 'hidden md:flex' : 'flex'}`}>
               
-              {/* Secondary AI Context Recommendation Banner */}
+              {/* AI Context Recommendation Banner */}
               <AiRecommendationBanner />
 
               {/* Synchronized Card List */}
@@ -124,7 +127,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* Selected Service Detail Drawer / Panel */}
+            {/* Selected Service Detail Panel */}
             {selectedService && <ServiceDetailPanel />}
           </div>
         )}
@@ -143,46 +146,12 @@ export default function App() {
           </div>
         )}
 
-        {/* Saved Places Tab View */}
-        {activeTab === 'saved' && (
-          <div className="flex-1 overflow-y-auto w-full max-w-3xl mx-auto p-2">
-            <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl mb-4">
-              <div className="flex items-center gap-2">
-                <Bookmark className="w-5 h-5 text-amber-400 fill-amber-400" />
-                <h3 className="text-base font-bold text-slate-100 font-display">Saved Places</h3>
-              </div>
-              <p className="text-xs text-slate-400 mt-1">Bookmarked places for offline quick access.</p>
-            </div>
-
-            {savedPlacesList.length === 0 ? (
-              <div className="p-8 text-center bg-slate-900/60 rounded-2xl border border-slate-800">
-                <Bookmark className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-                <p className="text-xs text-slate-400">No saved places yet. Click "Save" on any service detail card.</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {savedPlacesList.map(place => (
-                  <div key={place.id} className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex justify-between items-center">
-                    <div>
-                      <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-sky-950 text-sky-400 border border-sky-800">
-                        {place.category}
-                      </span>
-                      <h4 className="text-sm font-bold text-white mt-1">{place.name}</h4>
-                      <p className="text-xs text-slate-400">{place.address}</p>
-                    </div>
-                    <span className="text-xs font-bold text-sky-400">{place.distanceKm} km</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
       </main>
 
       {/* Global Modals & Auth Experience */}
       <AuthModal />
       <UserProfileModal />
+      <BusinessAuthModal />
       <AllServicesModal />
       <HelpMeNowModal />
       <LocationPickerModal />

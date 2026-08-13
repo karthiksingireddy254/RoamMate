@@ -36,7 +36,7 @@ function hashPassword(password) {
 // Initialize Supabase PostgreSQL Database Tables & Indexes
 initializeDatabase().catch(err => console.error('Database initialization error:', err));
 
-// --- AUTHENTICATION ENDPOINTS (Supabase PostgreSQL Backed) ---
+// --- TRAVELER AUTHENTICATION ENDPOINTS (Supabase PostgreSQL Backed) ---
 
 // 0A. Register New User Account
 app.post('/api/auth/register', async (req, res) => {
@@ -97,7 +97,6 @@ app.post('/api/auth/login', async (req, res) => {
     const pwdHash = hashPassword(password);
 
     if (userRow.password_hash !== pwdHash) {
-      // STRICT ERROR: Wrong password! DO NOT ALLOW ACCESS!
       console.warn(`🔒 Failed login attempt for ${cleanEmail} - Incorrect Password`);
       return res.status(400).json({ error: 'Email or password is incorrect.' });
     }
@@ -117,6 +116,144 @@ app.post('/api/auth/login', async (req, res) => {
   } catch (err) {
     console.error('Login API Error:', err.message);
     return res.status(500).json({ error: 'Failed to authenticate user.' });
+  }
+});
+
+// --- BUSINESS ORGANIZATION & SERVICE PROVIDER ENDPOINTS ---
+
+// 0C. Register Business Organization / Service Provider
+app.post('/api/business/register', async (req, res) => {
+  try {
+    const { businessName, ownerName, email, password, phone, category, licenseNo, city } = req.body;
+    if (!email || !password || !businessName || !phone) {
+      return res.status(400).json({ error: 'Business name, email, password, and phone number are required.' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const existing = await db.query(`SELECT * FROM business_providers WHERE email = $1;`, [cleanEmail]);
+    if (existing.rows && existing.rows.length > 0) {
+      return res.status(400).json({ error: 'A business organization with this email already exists.' });
+    }
+
+    const providerId = 'biz_' + Date.now();
+    const pwdHash = hashPassword(password);
+
+    await db.query(`
+      INSERT INTO business_providers (id, business_name, owner_name, email, password_hash, phone, category, license_no, city)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+    `, [providerId, businessName, ownerName || businessName, cleanEmail, pwdHash, phone, category || 'service', licenseNo || '', city || '']);
+
+    console.log(`🏢 New Business Organization registered in Supabase DB: ${businessName} (${cleanEmail})`);
+
+    return res.json({
+      success: true,
+      provider: {
+        id: providerId,
+        businessName,
+        ownerName: ownerName || businessName,
+        email: cleanEmail,
+        phone,
+        category: category || 'service',
+        licenseNo: licenseNo || '',
+        city: city || ''
+      }
+    });
+  } catch (err) {
+    console.error('Business Registration API Error:', err.message);
+    return res.status(500).json({ error: 'Failed to create business organization account.' });
+  }
+});
+
+// 0D. Business Organization Sign In
+app.post('/api/business/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required.' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const providerRes = await db.query(`SELECT * FROM business_providers WHERE email = $1;`, [cleanEmail]);
+
+    if (!providerRes.rows || providerRes.rows.length === 0) {
+      return res.status(400).json({ error: 'Business email or password is incorrect.' });
+    }
+
+    const row = providerRes.rows[0];
+    const pwdHash = hashPassword(password);
+
+    if (row.password_hash !== pwdHash) {
+      console.warn(`🔒 Failed business login attempt for ${cleanEmail}`);
+      return res.status(400).json({ error: 'Business email or password is incorrect.' });
+    }
+
+    console.log(`🔑 Successful business login for ${cleanEmail}`);
+
+    return res.json({
+      success: true,
+      provider: {
+        id: row.id,
+        businessName: row.business_name,
+        ownerName: row.owner_name,
+        email: row.email,
+        phone: row.phone,
+        category: row.category,
+        licenseNo: row.license_no,
+        city: row.city
+      }
+    });
+  } catch (err) {
+    console.error('Business Login API Error:', err.message);
+    return res.status(500).json({ error: 'Failed to authenticate business provider.' });
+  }
+});
+
+// 0E. Business Provider Add/Update Service Workshop Place
+app.post('/api/business/places', async (req, res) => {
+  try {
+    const { providerId, name, category, subcategory, lat, lng, address, phone, amenities, description, image, status } = req.body;
+    if (!name || !category || !lat || !lng) {
+      return res.status(400).json({ error: 'Name, category, latitude, and longitude are required.' });
+    }
+
+    const placeId = 'place_' + Date.now();
+    const amenitiesArr = Array.isArray(amenities) ? amenities : (amenities ? amenities.split(',').map(s => s.trim()) : []);
+
+    await db.query(`
+      INSERT INTO places (id, name, category, subcategory, lat, lng, address, rating, reviews_count, status, phone, amenities, description, image, provider_id)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);
+    `, [
+      placeId, name, category, subcategory || 'Vehicle Service', parseFloat(lat), parseFloat(lng),
+      address || '', 5.0, 1, status || 'Open Now', phone || '',
+      JSON.stringify(amenitiesArr), description || 'Verified vehicle service workshop listing.',
+      image || 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=600&auto=format&fit=crop&q=80',
+      providerId || ''
+    ]);
+
+    console.log(`🛠️ Business Service Workshop added to Supabase DB: ${name} (${category})`);
+
+    return res.json({
+      success: true,
+      place: {
+        id: placeId,
+        name,
+        category,
+        subcategory: subcategory || 'Vehicle Service',
+        lat: parseFloat(lat),
+        lng: parseFloat(lng),
+        address,
+        phone,
+        status: status || 'Open Now',
+        rating: 5.0,
+        reviewsCount: 1,
+        amenities: amenitiesArr,
+        description,
+        image
+      }
+    });
+  } catch (err) {
+    console.error('Add Business Place API Error:', err.message);
+    return res.status(500).json({ error: 'Failed to add service listing.' });
   }
 });
 
@@ -329,35 +466,23 @@ app.get('/api/route/services', async (req, res) => {
 app.post('/api/assistance/help', async (req, res) => {
   const { issueType, lat, lng, radiusKm = 10 } = req.body;
 
-  let targetCategories = ['service', 'towing', 'medical', 'fuel'];
+  let targetCategories = ['service', 'towing', 'fuel', 'ev'];
   if (issueType === 'BIKE_BREAKDOWN' || issueType === 'FLAT_TYRE') {
     targetCategories = ['service', 'towing'];
   } else if (issueType === 'OUT_OF_FUEL') {
     targetCategories = ['fuel', 'ev', 'towing'];
-  } else if (issueType === 'MEDICAL_EMERGENCY') {
-    targetCategories = ['medical'];
-  } else if (issueType === 'NEED_STAY') {
-    targetCategories = ['stay'];
   }
 
   const allServices = await placeProvider.getNearbyServices({ lat, lng, radiusKm });
   const emergencyMatches = allServices.filter(p => targetCategories.includes(p.category));
-
-  // Record assistance request in Supabase PostgreSQL
-  try {
-    await db.query(`
-      INSERT INTO assistance_requests (issue_type, lat, lng, status)
-      VALUES ($1, $2, $3, $4);
-    `, [issueType, lat, lng, 'OPEN']);
-  } catch (e) {}
 
   return res.json({
     issueType,
     totalMatches: emergencyMatches.length,
     emergencyContacts: [
       { name: 'National Emergency Helpline', phone: '112' },
-      { name: 'Ambulance Emergency', phone: '108' },
-      { name: 'Roadside Towing Helpline', phone: '1800 102 1100' }
+      { name: 'Highway Patrol Towing', phone: '1033' },
+      { name: 'Roadside Breakdown Recovery', phone: '1800 102 1100' }
     ],
     services: emergencyMatches.slice(0, 8)
   });

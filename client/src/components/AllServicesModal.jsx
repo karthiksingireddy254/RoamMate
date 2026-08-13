@@ -1,94 +1,161 @@
 import React from 'react';
 import { useTravel } from '../context/TravelContext';
-import { X } from 'lucide-react';
+import { 
+  Fuel, Zap, Wrench, Truck, Car, Bike, X, ArrowRight, Building2, CheckCircle
+} from 'lucide-react';
 
-const SERVICE_GRID_CONFIG = [
-  { id: 'stay', name: 'Accommodation', image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&auto=format&fit=crop&q=80' },
-  { id: 'food', name: 'Restaurants & Cafes', image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&auto=format&fit=crop&q=80' },
-  { id: 'fuel', name: 'Fuel Stations', image: 'https://images.unsplash.com/photo-1527018601619-a508a2be00cd?w=400&auto=format&fit=crop&q=80' },
-  { id: 'ev', name: 'EV Charging Points', image: 'https://images.unsplash.com/photo-1563720223185-11003d516935?w=400&auto=format&fit=crop&q=80' },
-  { id: 'service', name: 'Vehicle Mechanics', image: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=400&auto=format&fit=crop&q=80' },
-  { id: 'towing', name: 'Towing & Rescue', image: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=400&auto=format&fit=crop&q=80' },
-  { id: 'medical', name: 'Medical & Pharmacies', image: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=400&auto=format&fit=crop&q=80' },
-  { id: 'transport', name: 'Public Transport & Transit', image: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=400&auto=format&fit=crop&q=80' },
-  { id: 'explore', name: 'Tourist Attractions', image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&auto=format&fit=crop&q=80' },
-  { id: 'parking', name: 'Parking Spaces', image: 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=400&auto=format&fit=crop&q=80' },
-  { id: 'restroom', name: 'Restrooms & Washrooms', image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=400&auto=format&fit=crop&q=80' },
-  { id: 'atm', name: 'ATMs & Banking', image: 'https://images.unsplash.com/photo-1601597111158-2fceff292cdc?w=400&auto=format&fit=crop&q=80' },
-  { id: 'rental', name: 'Bike & Vehicle Rentals', image: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=400&auto=format&fit=crop&q=80' },
-  { id: 'essentials', name: 'Essentials & Supermarkets', image: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=400&auto=format&fit=crop&q=80' }
+const VEHICLE_SERVICES_GRID = [
+  {
+    id: 'service',
+    title: 'Mechanic & Garages',
+    desc: 'Instant tubeless puncture repair, motorcycle mechanic, car diagnostic garage, engine oil change & tune-up.',
+    icon: Wrench,
+    color: 'text-slate-300',
+    bg: 'bg-slate-900 border-slate-700'
+  },
+  {
+    id: 'fuel',
+    title: 'Fuel Stations',
+    desc: '24x7 Petrol & Diesel pumps, Swagat highway fuel plazas, XP95 & Speed petrol with tyre air pressure checking.',
+    icon: Fuel,
+    color: 'text-emerald-400',
+    bg: 'bg-emerald-950/60 border-emerald-800'
+  },
+  {
+    id: 'ev',
+    title: 'EV Fast Chargers',
+    desc: '60kW to 150kW DC fast charging stations compatible with Nexon EV, ZS EV, Ather scooters & CCS2 chargers.',
+    icon: Zap,
+    color: 'text-cyan-400',
+    bg: 'bg-cyan-950/60 border-cyan-800'
+  },
+  {
+    id: 'towing',
+    title: 'Breakdown Towing',
+    desc: '24-hour emergency flatbed tow trucks, hydraulic bike carriers, battery jumpstart & emergency fuel delivery.',
+    icon: Truck,
+    color: 'text-purple-400',
+    bg: 'bg-purple-950/60 border-purple-800'
+  },
+  {
+    id: 'parking',
+    title: 'Vehicle Parking',
+    desc: 'Multi-level automated car & bike parking plazas with 24x7 CCTV security, FASTag entry, and covered bays.',
+    icon: Car,
+    color: 'text-blue-400',
+    bg: 'bg-blue-950/60 border-blue-800'
+  },
+  {
+    id: 'rental',
+    title: 'Bike & Car Rentals',
+    desc: 'Self-drive tourist scooter & motorcycle rentals (Activa, Royal Enfield) and SUV car rentals with zero deposit.',
+    icon: Bike,
+    color: 'text-indigo-400',
+    bg: 'bg-indigo-950/60 border-indigo-800'
+  }
 ];
 
 export default function AllServicesModal() {
-  const { isAllServicesModalOpen, setIsAllServicesModalOpen, categoryCounts, setSelectedCategory, radiusKm } = useTravel();
+  const { 
+    isAllServicesModalOpen, 
+    setIsAllServicesModalOpen, 
+    setSelectedCategory,
+    categoryCounts,
+    setIsBusinessModalOpen
+  } = useTravel();
 
   if (!isAllServicesModalOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-3xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-slate-800 bg-slate-900/90">
+        <div className="relative bg-slate-950 px-6 py-5 border-b border-slate-800 flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-bold text-slate-100 font-display">Services Near You</h3>
-            <p className="text-xs text-slate-400 mt-0.5">Calculated in real-time within {radiusKm} km radius</p>
+            <span className="text-[10px] uppercase tracking-wider font-extrabold text-sky-400 bg-sky-950 px-2 py-0.5 rounded border border-sky-800">
+              Vehicle-Focused Discovery
+            </span>
+            <h2 className="text-xl font-black text-white font-display mt-1">Vehicle Services Hub</h2>
+            <p className="text-xs text-slate-400">Everything your motorcycle, car, or EV needs on the road.</p>
           </div>
+
           <button
             onClick={() => setIsAllServicesModalOpen(false)}
-            className="p-1.5 text-slate-400 hover:text-white bg-slate-800 rounded-full"
+            className="p-2 text-slate-400 hover:text-white rounded-full bg-slate-800/80 hover:bg-slate-800 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Category Grid with Real Pictures */}
-        <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-3.5 overflow-y-auto">
-          {SERVICE_GRID_CONFIG.map((item) => {
-            const count = categoryCounts[item.id] ?? 0;
+        {/* Content Body */}
+        <div className="p-6 overflow-y-auto space-y-6 flex-1">
+          
+          {/* Services Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            {VEHICLE_SERVICES_GRID.map((svc) => {
+              const Icon = svc.icon;
+              const count = categoryCounts[svc.id] || 0;
 
-            return (
-              <div
-                key={item.id}
-                onClick={() => {
-                  setSelectedCategory(item.id);
-                  setIsAllServicesModalOpen(false);
-                }}
-                className="relative h-24 rounded-2xl overflow-hidden border border-slate-800 hover:border-sky-500 transition-all cursor-pointer group shadow-md"
-              >
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 brightness-75"
-                />
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/70 to-transparent p-3.5 flex items-center justify-between">
+              return (
+                <div
+                  key={svc.id}
+                  onClick={() => {
+                    setSelectedCategory(svc.id);
+                    setIsAllServicesModalOpen(false);
+                  }}
+                  className={`p-4 rounded-2xl border ${svc.bg} hover:scale-[1.02] transition-all cursor-pointer group flex flex-col justify-between`}
+                >
                   <div>
-                    <h4 className="text-sm font-bold text-white group-hover:text-sky-300 transition-colors font-display">
-                      {item.name}
-                    </h4>
-                    <span className="text-[11px] text-slate-300">Tap to filter map & list</span>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="w-9 h-9 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-center">
+                        <Icon className={`w-5 h-5 ${svc.color}`} />
+                      </div>
+                      <span className="text-[10px] font-black text-slate-300 bg-slate-950 px-2 py-0.5 rounded-full border border-slate-800">
+                        {count} Available
+                      </span>
+                    </div>
+
+                    <h3 className="text-sm font-extrabold text-white group-hover:text-sky-400 transition-colors">
+                      {svc.title}
+                    </h3>
+                    <p className="text-[11px] text-slate-400 mt-1 line-clamp-3 leading-relaxed">
+                      {svc.desc}
+                    </p>
                   </div>
 
-                  <div className="text-base font-extrabold text-white font-display px-3 py-1 rounded-xl bg-sky-600/90 border border-sky-400/50 backdrop-blur-md shadow-md">
-                    {count}
+                  <div className="mt-3 flex items-center justify-end text-xs font-bold text-sky-400 group-hover:translate-x-1 transition-transform">
+                    <span>Explore</span>
+                    <ArrowRight className="w-3.5 h-3.5 ml-1" />
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
 
-        {/* Footer */}
-        <div className="p-4 bg-slate-950 border-t border-slate-800 text-center">
-          <button
-            onClick={() => {
-              setSelectedCategory('all');
-              setIsAllServicesModalOpen(false);
-            }}
-            className="w-full py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold shadow-lg"
-          >
-            Show All Services ({categoryCounts.all || 0})
-          </button>
+          {/* Business Partner Promotion Banner */}
+          <div className="bg-gradient-to-r from-amber-950/60 via-slate-900 to-slate-950 border border-amber-500/40 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+                <Building2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-white">Are you a Garage or Service Provider?</h4>
+                <p className="text-xs text-amber-300/80">Register your workshop or service point to keep your listing details up to date!</p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                setIsAllServicesModalOpen(false);
+                setIsBusinessModalOpen(true);
+              }}
+              className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-xs whitespace-nowrap cursor-pointer shadow-md shrink-0"
+            >
+              Business Sign In / Register
+            </button>
+          </div>
+
         </div>
 
       </div>

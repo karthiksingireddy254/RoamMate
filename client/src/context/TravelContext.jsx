@@ -28,30 +28,50 @@ export function TravelProvider({ children }) {
   const [isAllServicesModalOpen, setIsAllServicesModalOpen] = useState(false);
   const [isHelpMeModalOpen, setIsHelpMeModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isBusinessModalOpen, setIsBusinessModalOpen] = useState(false);
   const [travelMode, setTravelMode] = useState('BIKE');
 
-  // --- Auth State Management ---
+  // --- Theme Mode State (Dark / Light) ---
+  const [theme, setTheme] = useState(() => localStorage.getItem('roammate_theme') || 'dark');
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    localStorage.setItem('roammate_theme', nextTheme);
+  };
+
+  // --- Traveler Auth State Management ---
   const [user, setUser] = useState(() => LocalAuthHelper.getUser());
   const [authMode, setAuthMode] = useState(null); // null | 'login' | 'register'
   const [isAuthLoading, setIsAuthLoading] = useState(false);
   const [authError, setAuthError] = useState(null);
   const [authPromptMessage, setAuthPromptMessage] = useState(null);
 
+  // --- Business Organization Auth State ---
+  const [businessUser, setBusinessUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('roammate_biz_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
   // Require Auth Guard Helper
   const requireAuth = (callback, customMessage = 'Please sign in or create an account to access services on RoamMate.') => {
-    if (user) {
+    if (user || businessUser) {
       if (typeof callback === 'function') {
         callback();
       }
       return true;
     } else {
       setAuthPromptMessage(customMessage);
-      setAuthMode('register'); // Direct un-registered users to Register / Create Account
+      setAuthMode('register');
       return false;
     }
   };
 
-  // Login handler with strict password check & Supabase PostgreSQL database verification
+  // Login handler for Traveler
   const loginUser = async (email, password) => {
     setIsAuthLoading(true);
     setAuthError(null);
@@ -65,7 +85,6 @@ export function TravelProvider({ children }) {
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        // STRICT ERROR: Reject wrong password!
         const errMsg = data.error || 'Email or password is incorrect.';
         setAuthError(errMsg);
         setIsAuthLoading(false);
@@ -83,7 +102,7 @@ export function TravelProvider({ children }) {
     }
   };
 
-  // Register handler saving user to Supabase PostgreSQL database
+  // Register handler for Traveler
   const registerUser = async (name, email, password, phone = '', gender = 'Male') => {
     setIsAuthLoading(true);
     setAuthError(null);
@@ -114,12 +133,98 @@ export function TravelProvider({ children }) {
     }
   };
 
+  // Business Partner Registration
+  const registerBusiness = async (businessName, ownerName, email, password, phone, category, licenseNo, city) => {
+    setIsAuthLoading(true);
+    setAuthError(null);
+    try {
+      const res = await fetch('/api/business/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ businessName, ownerName, email, password, phone, category, licenseNo, city })
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        const errMsg = data.error || 'Business registration failed.';
+        setAuthError(errMsg);
+        setIsAuthLoading(false);
+        return { success: false, error: errMsg };
+      }
+
+      setBusinessUser(data.provider);
+      localStorage.setItem('roammate_biz_user', JSON.stringify(data.provider));
+      setIsAuthLoading(false);
+      return { success: true, provider: data.provider };
+    } catch (err) {
+      setAuthError('Network error. Unable to register business organization.');
+      setIsAuthLoading(false);
+      return { success: false, error: err.message };
+    }
+  };
+
+  // Business Partner Login
+  const loginBusiness = async (email, password) => {
+    setIsAuthLoading(true);
+    setAuthError(null);
+    try {
+      const res = await fetch('/api/business/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        const errMsg = data.error || 'Business email or password is incorrect.';
+        setAuthError(errMsg);
+        setIsAuthLoading(false);
+        return { success: false, error: errMsg };
+      }
+
+      setBusinessUser(data.provider);
+      localStorage.setItem('roammate_biz_user', JSON.stringify(data.provider));
+      setIsAuthLoading(false);
+      return { success: true, provider: data.provider };
+    } catch (err) {
+      setAuthError('Network error during business login.');
+      setIsAuthLoading(false);
+      return { success: false, error: err.message };
+    }
+  };
+
+  // Business Partner Add Service Listing
+  const addBusinessServicePlace = async (placeData) => {
+    try {
+      const res = await fetch('/api/business/places', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          providerId: businessUser?.id || '',
+          ...placeData
+        })
+      });
+      const data = await res.json();
+      if (data.success && data.place) {
+        fetchServices(currentLocation.lat, currentLocation.lng, radiusKm, selectedCategory, searchKeyword, activeSituation);
+        return { success: true, place: data.place };
+      } else {
+        return { success: false, error: data.error || 'Failed to add place listing.' };
+      }
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
   // Logout handler
   const logoutUser = async () => {
     setUser(null);
     LocalAuthHelper.setUser(null);
+    setBusinessUser(null);
+    localStorage.removeItem('roammate_biz_user');
     setSelectedService(null);
     setIsProfileModalOpen(false);
+    setIsBusinessModalOpen(false);
   };
 
   // Google OAuth Login
@@ -300,10 +405,15 @@ export function TravelProvider({ children }) {
         setIsHelpMeModalOpen,
         isProfileModalOpen,
         setIsProfileModalOpen,
+        isBusinessModalOpen,
+        setIsBusinessModalOpen,
         travelMode,
         setTravelMode,
         fetchServices,
-        // Auth Exports & Protection Guard
+        // Theme State
+        theme,
+        toggleTheme,
+        // Traveler Auth
         user,
         authMode,
         setAuthMode,
@@ -317,7 +427,12 @@ export function TravelProvider({ children }) {
         registerUser,
         logoutUser,
         loginWithGoogle,
-        sendPasswordReset
+        sendPasswordReset,
+        // Business Auth & Management Exports
+        businessUser,
+        registerBusiness,
+        loginBusiness,
+        addBusinessServicePlace
       }}
     >
       {children}
