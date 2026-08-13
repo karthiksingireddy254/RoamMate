@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { useTravel } from '../context/TravelContext';
-import { Navigation, Compass } from 'lucide-react';
+import { Navigation, Compass, Layers } from 'lucide-react';
 
 const CATEGORY_DEFAULT_IMAGES = {
   stay: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=100&auto=format&fit=crop&q=80',
@@ -39,12 +39,22 @@ const CATEGORY_MARKER_COLORS = {
   convenience: '#0d9488'
 };
 
+// Live Google Maps Tiles Engine URLs
+const GOOGLE_MAPS_TILES = {
+  streets: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+  hybrid: 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+  terrain: 'https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}'
+};
+
 export default function MapView() {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
+  const tileLayerRef = useRef(null);
   const radiusCircleRef = useRef(null);
   const userMarkerRef = useRef(null);
   const markersLayerGroupRef = useRef(null);
+
+  const [mapStyle, setMapStyle] = useState('streets');
 
   const {
     currentLocation,
@@ -68,9 +78,10 @@ export default function MapView() {
         attributionControl: false
       });
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        subdomains: 'abc'
+      // Up-to-date Google Maps tile layer
+      tileLayerRef.current = L.tileLayer(GOOGLE_MAPS_TILES.streets, {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
       }).addTo(map);
 
       L.control.zoom({ position: 'bottomright' }).addTo(map);
@@ -86,6 +97,13 @@ export default function MapView() {
       }
     };
   }, []);
+
+  // Handle live Map Style Switcher (Google Streets vs Hybrid Satellite)
+  useEffect(() => {
+    if (mapInstanceRef.current && tileLayerRef.current) {
+      tileLayerRef.current.setUrl(GOOGLE_MAPS_TILES[mapStyle]);
+    }
+  }, [mapStyle]);
 
   useEffect(() => {
     const map = mapInstanceRef.current;
@@ -142,7 +160,7 @@ export default function MapView() {
       bounds.extend([place.lat, place.lng]);
 
       const markerHtml = `
-        <div class="custom-service-marker ${isSelected ? 'active-marker' : ''}" style="border-color: ${catColor}; overflow: hidden;">
+        <div class="custom-service-marker ${isSelected ? 'active-marker' : ''}" style="border-color: ${catColor}; overflow: hidden;" title="${place.name}">
           <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
         </div>
       `;
@@ -174,6 +192,24 @@ export default function MapView() {
   return (
     <div className="relative w-full h-full min-h-[400px] overflow-hidden rounded-2xl border border-slate-800 shadow-inner">
       <div ref={mapContainerRef} className="w-full h-full" />
+
+      {/* Google Maps Style Toggle (Streets vs Hybrid Satellite) */}
+      <div className="absolute top-4 right-4 z-[400] bg-slate-900/90 border border-slate-700/90 rounded-xl p-1 shadow-lg backdrop-blur-md flex items-center gap-1">
+        <button
+          onClick={() => setMapStyle('streets')}
+          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${mapStyle === 'streets' ? 'bg-sky-600 text-white shadow' : 'text-slate-300 hover:text-white'}`}
+          title="Google Maps Streets View"
+        >
+          🗺️ Google Streets
+        </button>
+        <button
+          onClick={() => setMapStyle('hybrid')}
+          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${mapStyle === 'hybrid' ? 'bg-sky-600 text-white shadow' : 'text-slate-300 hover:text-white'}`}
+          title="Google Maps Satellite Hybrid View"
+        >
+          🛰️ Satellite
+        </button>
+      </div>
 
       <button
         onClick={() => {
