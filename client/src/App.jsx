@@ -3,6 +3,8 @@ import { useTravel } from './context/TravelContext';
 import AuthLandingScreen from './components/AuthLandingScreen';
 import ProviderDashboard from './components/ProviderDashboard';
 import VehicleEmergencyPanel from './components/VehicleEmergencyPanel';
+import TouristAuthModal from './components/TouristAuthModal';
+import ProviderAuthModal from './components/ProviderAuthModal';
 import Navbar from './components/Navbar';
 import CategoryBar from './components/CategoryBar';
 import MapView from './components/MapView';
@@ -13,11 +15,9 @@ import HelpMeNowModal from './components/HelpMeNowModal';
 import LocationPickerModal from './components/LocationPickerModal';
 import UserPreferencesModal from './components/UserPreferencesModal';
 import UserProfileModal from './components/UserProfileModal';
-import BusinessAuthModal from './components/BusinessAuthModal';
 import AiRecommendationBanner from './components/AiRecommendationBanner';
 import OnMyRoutePanel from './components/OnMyRoutePanel';
 import ExploreNearbyView from './components/ExploreNearbyView';
-import AuthModal from './components/AuthModal';
 import { 
   Compass, ShieldAlert, Database, Wrench, Fuel, Zap, Truck, ArrowLeft
 } from 'lucide-react';
@@ -38,12 +38,9 @@ export default function App() {
     businessUser,
     viewMode,
     activeTab,
-    setActiveTab,
     selectedService,
     activeSituation,
     setActiveSituation,
-    currentLocation,
-    radiusKm,
     theme,
     requireAuth,
     isEmergencyModalOpen,
@@ -63,8 +60,8 @@ export default function App() {
     return (
       <>
         <AuthLandingScreen />
-        <AuthModal />
-        <BusinessAuthModal />
+        <TouristAuthModal />
+        <ProviderAuthModal />
       </>
     );
   }
@@ -208,10 +205,10 @@ export default function App() {
 
       </main>
 
-      {/* Global Modals & Auth Experience */}
-      <AuthModal />
+      {/* Global Modals & Separate Auth Experience */}
+      <TouristAuthModal />
+      <ProviderAuthModal />
       <UserProfileModal />
-      <BusinessAuthModal />
       <AllServicesModal />
       <HelpMeNowModal />
       <LocationPickerModal />
