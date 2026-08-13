@@ -172,7 +172,20 @@ export default function MapView() {
         iconAnchor: [19, 19]
       });
 
-      const marker = L.marker([place.lat, place.lng], { icon: customIcon });
+      const isRegistered = place.sourceType === 'ROAMMATE_REGISTERED' || (place.id && place.id.includes('prov'));
+      const badgeHtml = isRegistered 
+        ? `<span style="background: #f59e0b; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 800; font-size: 10px;">🏢 RoamMate Registered</span>`
+        : `<span style="background: #0284c7; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 800; font-size: 10px;">🌐 Map Data</span>`;
+
+      const popupHtml = `
+        <div style="font-family: system-ui, sans-serif; padding: 4px; min-width: 180px;">
+          <div style="margin-bottom: 4px;">${badgeHtml}</div>
+          <div style="font-weight: 900; font-size: 13px; color: #0f172a; margin-bottom: 2px;">${place.name}</div>
+          <div style="font-size: 11px; color: #64748b; font-weight: 700;">📍 ${place.distanceKm} km away • <span style="color: #10b981;">${place.status || 'Available Now'}</span></div>
+        </div>
+      `;
+
+      marker.bindPopup(popupHtml, { offset: [0, -10] });
 
       marker.on('click', () => {
         requireAuth(() => {

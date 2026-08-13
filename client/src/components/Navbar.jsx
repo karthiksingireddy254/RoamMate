@@ -11,6 +11,7 @@ export default function Navbar() {
     radiusKm,
     setRadiusKm,
     requestLocation,
+    setManualLocation,
     setIsLocationModalOpen,
     viewMode,
     setViewMode,
@@ -40,12 +41,31 @@ export default function Navbar() {
     setQueryInput(searchKeyword);
   }, [searchKeyword]);
 
-  const handleSearchSubmit = (e) => {
+  const handleSearchSubmit = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    if (!requireAuth(null, 'Please sign in or create an account to search vehicle services on RoamMate.')) {
+    if (!requireAuth(null, 'Please sign in or create an account to discover services on RoamMate.')) {
       return;
     }
     const cleanQuery = queryInput.trim();
+    if (!cleanQuery) return;
+
+    // Try resolving location coordinates first
+    try {
+      const res = await fetch(`/api/location/search?q=${encodeURIComponent(cleanQuery)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.results && data.results.length > 0) {
+          const loc = data.results[0];
+          useTravel.getState?.() || null;
+          // Set location and discover services around it
+          setManualLocation(loc.lat, loc.lng, loc.city || loc.name || cleanQuery, loc.name);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Location lookup fallback:', err);
+    }
+
     setSearchKeyword(cleanQuery);
     setSelectedCategory('all');
     fetchServices(currentLocation.lat, currentLocation.lng, radiusKm, 'all', cleanQuery);
@@ -191,7 +211,7 @@ export default function Navbar() {
                 type="text"
                 value={queryInput}
                 onChange={(e) => setQueryInput(e.target.value)}
-                placeholder="🔎 Search vehicle services (e.g. Mechanic, Towing, Car Breakdown, Fuel, EV Charger)"
+                placeholder="📍 Search location (e.g. Goa, Agra, Hyderabad, Bengaluru)"
                 style={{ color: '#000000', backgroundColor: '#ffffff', fontWeight: '800' }}
                 className="w-full text-black bg-white placeholder-slate-500 text-sm font-black rounded-full pl-10 pr-9 py-2.5 border-2 border-sky-500 focus:border-sky-400 focus:ring-4 focus:ring-sky-400/30 focus:outline-none shadow-xl transition-all"
               />

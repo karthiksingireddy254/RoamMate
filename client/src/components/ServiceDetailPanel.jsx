@@ -2,7 +2,7 @@ import React from 'react';
 import { useTravel } from '../context/TravelContext';
 import { 
   X, MapPin, Navigation, Phone, Bookmark, Star, Clock, 
-  ShieldCheck, CheckCircle2 
+  ShieldCheck, CheckCircle2, Building2, Globe 
 } from 'lucide-react';
 
 const CATEGORY_DEFAULT_IMAGES = {
@@ -10,7 +10,6 @@ const CATEGORY_DEFAULT_IMAGES = {
   towing: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&auto=format&fit=crop&q=80',
   fuel: 'https://images.unsplash.com/photo-1527018601619-a508a2be00cd?w=600&auto=format&fit=crop&q=80',
   ev: 'https://images.unsplash.com/photo-1563720223185-11003d516935?w=600&auto=format&fit=crop&q=80',
-  parking: 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=600&auto=format&fit=crop&q=80',
   rental: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=600&auto=format&fit=crop&q=80'
 };
 
@@ -23,6 +22,7 @@ export default function ServiceDetailPanel() {
   const isSaved = savedPlaceIds.includes(selectedService.id);
   const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${selectedService.lat},${selectedService.lng}`;
   const imageUrl = selectedService.image || CATEGORY_DEFAULT_IMAGES[selectedService.category] || CATEGORY_DEFAULT_IMAGES.service;
+  const isRoamMatePartner = selectedService.sourceType === 'ROAMMATE_REGISTERED' || (selectedService.id && selectedService.id.includes('prov'));
 
   return (
     <div className={`fixed inset-x-0 bottom-0 z-[1500] md:relative md:inset-auto md:w-96 md:h-full border-t md:border-t-0 md:border-l shadow-2xl backdrop-blur-xl rounded-t-3xl md:rounded-none overflow-hidden flex flex-col transition-all duration-300 max-h-[85vh] md:max-h-full ${
@@ -50,13 +50,23 @@ export default function ServiceDetailPanel() {
           <X className="w-4 h-4" />
         </button>
 
-        {/* Title & Category Badge Overlay */}
-        <div className="absolute bottom-3 left-4 right-4">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] uppercase font-black tracking-wider px-2.5 py-0.5 rounded-full bg-sky-950 text-sky-300 border border-sky-600/50 backdrop-blur-md">
+        {/* Title & Data Source Badge Overlay */}
+        <div className="absolute bottom-3 left-4 right-4 space-y-1">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className={`text-[10px] uppercase font-black tracking-wider px-2.5 py-0.5 rounded-full border backdrop-blur-md flex items-center gap-1 ${
+              isRoamMatePartner
+                ? 'bg-amber-500/90 text-white border-amber-400'
+                : 'bg-sky-950/90 text-sky-300 border-sky-600/50'
+            }`}>
+              {isRoamMatePartner ? <Building2 className="w-3 h-3 text-white" /> : <Globe className="w-3 h-3 text-sky-300" />}
+              <span>{isRoamMatePartner ? '🏢 RoamMate Registered' : '🌐 Map Data'}</span>
+            </span>
+
+            <span className="text-[10px] uppercase font-black tracking-wider px-2.5 py-0.5 rounded-full bg-slate-950/80 text-slate-200 border border-slate-700 backdrop-blur-md">
               {selectedService.subcategory || selectedService.category}
             </span>
           </div>
+
           <h3 className="text-lg font-black text-white font-display leading-tight drop-shadow-md">
             {selectedService.name}
           </h3>
@@ -73,7 +83,7 @@ export default function ServiceDetailPanel() {
           <div>
             <div className="flex items-center justify-center gap-1 text-amber-500 font-black text-sm">
               <Star className="w-4 h-4 fill-amber-500" />
-              <span>{selectedService.rating || 4.5}</span>
+              <span>{selectedService.rating || 4.8}</span>
             </div>
             <span className={`text-[10px] font-bold ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
               ({selectedService.reviewsCount || 45} reviews)
@@ -89,7 +99,7 @@ export default function ServiceDetailPanel() {
 
           <div>
             <div className="text-emerald-600 font-extrabold text-xs truncate">
-              {selectedService.status || 'Open Now'}
+              {selectedService.status || 'Available Now'}
             </div>
             <span className={`text-[10px] font-bold ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Status</span>
           </div>
