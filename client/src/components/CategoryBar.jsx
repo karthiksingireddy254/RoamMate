@@ -9,8 +9,7 @@ const VEHICLE_CATEGORIES = [
   { id: 'service', label: 'Mechanic & Repair Garages', icon: Wrench, color: 'text-slate-600' },
   { id: 'towing', label: 'Breakdown Towing & Rescue', icon: Truck, color: 'text-purple-600' },
   { id: 'fuel', label: 'Fuel & Gas Stations', icon: Fuel, color: 'text-emerald-600' },
-  { id: 'ev', label: 'EV Fast Chargers', icon: Zap, color: 'text-cyan-600' },
-  { id: 'rental', label: 'Bike & Car Rentals', icon: Bike, color: 'text-indigo-600' }
+  { id: 'ev', label: 'EV Fast Chargers', icon: Zap, color: 'text-cyan-600' }
 ];
 
 export default function CategoryBar() {

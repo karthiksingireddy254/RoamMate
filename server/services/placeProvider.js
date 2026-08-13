@@ -6,14 +6,13 @@ const axios = require('axios');
 const db = require('../db');
 const { filterByRadius, getDistanceKm } = require('./geoService');
 
-const ALLOWED_VEHICLE_CATEGORIES = ['service', 'towing', 'fuel', 'ev', 'rental'];
+const ALLOWED_VEHICLE_CATEGORIES = ['service', 'towing', 'fuel', 'ev'];
 
 const CATEGORY_IMAGES = {
   fuel: 'https://images.unsplash.com/photo-1527018601619-a508a2be00cd?w=600&auto=format&fit=crop&q=80',
   ev: 'https://images.unsplash.com/photo-1563720223185-11003d516935?w=600&auto=format&fit=crop&q=80',
   service: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=600&auto=format&fit=crop&q=80',
-  towing: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&auto=format&fit=crop&q=80',
-  rental: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=600&auto=format&fit=crop&q=80'
+  towing: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&auto=format&fit=crop&q=80'
 };
 
 class PlaceProvider {
@@ -26,8 +25,8 @@ class PlaceProvider {
     let places = [];
 
     try {
-      // 1. Query Supabase PostgreSQL places (STRICT VEHICLE CATEGORIES ONLY)
-      const res = await db.query(`SELECT * FROM places WHERE category IN ('service', 'towing', 'fuel', 'ev', 'rental');`);
+      // 1. Query Supabase PostgreSQL places (STRICT VEHICLE EMERGENCY CATEGORIES ONLY)
+      const res = await db.query(`SELECT * FROM places WHERE category IN ('service', 'towing', 'fuel', 'ev');`);
       if (res.rows && res.rows.length > 0) {
         places = res.rows.map(row => ({
           id: row.id,
@@ -175,7 +174,6 @@ class PlaceProvider {
     if (text.includes('fuel') || text.includes('petrol') || text.includes('diesel') || text.includes('gas') || text.includes('indianoil') || text.includes('hpcl') || text.includes('bpcl') || text.includes('shell')) return 'fuel';
     if (text.includes('ev') || text.includes('charger') || text.includes('charging') || text.includes('tata power') || text.includes('ather')) return 'ev';
     if (text.includes('tow') || text.includes('towing') || text.includes('breakdown') || text.includes('recovery') || text.includes('crane')) return 'towing';
-    if (text.includes('rental') || text.includes('rent') || text.includes('scooter') || text.includes('bike rental')) return 'rental';
     return 'service'; // Default to Mechanic & Repair Garages
   }
 
@@ -187,8 +185,7 @@ class PlaceProvider {
       service: 0,
       towing: 0,
       fuel: 0,
-      ev: 0,
-      rental: 0
+      ev: 0
     };
 
     nearby.forEach(place => {
@@ -256,8 +253,7 @@ class PlaceProvider {
       { name: 'Tata Power 60kW Fast EV Charging Hub', category: 'ev', subcategory: 'EV Fast Charger', offsetLat: -0.006, offsetLng: 0.009, rating: 4.8, phone: '1800 209 5161', amenities: ['60kW DC Fast Charger', 'Ather & CCS2'] },
       { name: 'Express Bike & Scooter Doctor Garage', category: 'service', subcategory: 'Bike & Scooter Repair', offsetLat: 0.004, offsetLng: -0.007, rating: 4.9, phone: '+91 98490 55123', amenities: ['Tubeless Puncture Repair', 'Engine Service', 'Oil Change'] },
       { name: 'National 24x7 Flatbed Towing & Rescue', category: 'towing', subcategory: 'Flatbed Tow Truck', offsetLat: -0.010, offsetLng: -0.004, rating: 4.9, phone: '+91 98221 00999', amenities: ['Flatbed Towing', 'Emergency Fuel Delivery', 'Battery Jumpstart'] },
-      { name: 'Bosch Multi-Brand Car Service Center', category: 'service', subcategory: 'Car Diagnostic Garage', offsetLat: 0.009, offsetLng: -0.003, rating: 4.8, phone: '+91 40 2335 9999', amenities: ['Computerized Engine Scan', 'Wheel Alignment', 'AC Repair'] },
-      { name: 'Self Drive Tourist Bike & Scooter Rentals', category: 'rental', subcategory: 'Bike Rental', offsetLat: -0.007, offsetLng: 0.006, rating: 4.7, phone: '+91 94220 56789', amenities: ['Helmets Included', 'Self Drive', 'Activa & Royal Enfield'] }
+      { name: 'Bosch Multi-Brand Car Service Center', category: 'service', subcategory: 'Car Diagnostic Garage', offsetLat: 0.009, offsetLng: -0.003, rating: 4.8, phone: '+91 40 2335 9999', amenities: ['Computerized Engine Scan', 'Wheel Alignment', 'AC Repair'] }
     ];
 
     return templates.map((tmpl, index) => {

@@ -36,14 +36,6 @@ const VEHICLE_SERVICES_GRID = [
     icon: Truck,
     color: 'text-purple-400',
     bg: 'bg-purple-950/60 border-purple-800'
-  },
-  {
-    id: 'rental',
-    title: 'Bike & Car Rentals',
-    desc: 'Self-drive tourist scooter & motorcycle rentals (Activa, Royal Enfield) and SUV car rentals with zero deposit.',
-    icon: Bike,
-    color: 'text-indigo-400',
-    bg: 'bg-indigo-950/60 border-indigo-800'
   }
 ];
 

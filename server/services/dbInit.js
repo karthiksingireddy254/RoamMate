@@ -314,6 +314,13 @@ async function initializeDatabase() {
     }
     console.log('🌱 Database seeded with verified vehicle services.');
 
+    // STRICT VEHICLE CATEGORIES PURGE: Delete non-vehicle & rental categories from database
+    await db.query(`
+      DELETE FROM places 
+      WHERE category NOT IN ('service', 'towing', 'fuel', 'ev') OR category = 'rental';
+    `);
+    console.log('🧹 Purged non-emergency & rental category places from Supabase database.');
+
   } catch (err) {
     console.error('❌ Error initializing PostgreSQL database schema:', err.message);
   }
