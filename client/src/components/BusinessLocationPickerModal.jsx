@@ -13,12 +13,12 @@ export default function BusinessLocationPickerModal({ isOpen, onClose, onConfirm
   const mapInstanceRef = useRef(null);
   const markerRef = useRef(null);
 
-  const startLat = parseFloat(initialLat) || currentLocation.lat || 27.1767;
-  const startLng = parseFloat(initialLng) || currentLocation.lng || 78.0081;
+  const startLat = parseFloat(initialLat) || currentLocation?.lat || 27.1767;
+  const startLng = parseFloat(initialLng) || currentLocation?.lng || 78.0081;
 
   const [selectedLat, setSelectedLat] = useState(startLat);
   const [selectedLng, setSelectedLng] = useState(startLng);
-  const [addressText, setAddressText] = useState(initialAddress || 'Center Location');
+  const [addressText, setAddressText] = useState(initialAddress || 'Selected Location');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -47,7 +47,7 @@ export default function BusinessLocationPickerModal({ isOpen, onClose, onConfirm
       const markerIcon = L.divIcon({
         className: 'custom-business-picker-marker',
         html: `
-          <div style="background: #ea580c; color: white; padding: 6px; rounded: 50%; border: 3px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 9999px;">
+          <div style="background: #ea580c; color: white; padding: 6px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; width: 36px; height: 36px;">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
           </div>
         `,
@@ -117,7 +117,7 @@ export default function BusinessLocationPickerModal({ isOpen, onClose, onConfirm
 
   const handleGPSLocation = () => {
     requestLocation();
-    if (currentLocation.lat && currentLocation.lng) {
+    if (currentLocation?.lat && currentLocation?.lng) {
       updateLocation(currentLocation.lat, currentLocation.lng, true);
     }
   };
@@ -159,7 +159,7 @@ export default function BusinessLocationPickerModal({ isOpen, onClose, onConfirm
       lat: selectedLat,
       lng: selectedLng,
       address: addressText,
-      city: addressText.split(',')[1]?.trim() || addressText.split(',')[0]?.trim() || 'Custom Location'
+      city: addressText.split(',')[1]?.trim() || addressText.split(',')[0]?.trim() || 'Selected City'
     });
   };
 
@@ -199,7 +199,7 @@ export default function BusinessLocationPickerModal({ isOpen, onClose, onConfirm
                 <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Search for a location (e.g. NH44 North Highway, Agra)"
+                  placeholder="Search for a business location (e.g. Karimnagar Main Road)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-xs font-bold ${
@@ -269,7 +269,7 @@ export default function BusinessLocationPickerModal({ isOpen, onClose, onConfirm
 
             <div className="text-xs font-bold text-slate-500">
               <span className="font-black text-slate-700 dark:text-slate-300">Resolved Address: </span>
-              {isGeocoding ? 'Resolving location address...' : addressText}
+              {isGeocoding ? 'Resolving address...' : addressText}
             </div>
           </div>
 

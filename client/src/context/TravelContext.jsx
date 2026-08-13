@@ -150,14 +150,14 @@ export function TravelProvider({ children }) {
   };
 
   // Service Provider Registration
-  const registerBusiness = async (businessName, ownerName, email, password, phone, category, licenseNo, city) => {
+  const registerBusiness = async (businessName, ownerName, email, password, phone, category, licenseNo, city, address, lat, lng, coverageRadiusKm) => {
     setIsAuthLoading(true);
     setAuthError(null);
     try {
       const res = await fetch('/api/business/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ businessName, ownerName, email, password, phone, category, licenseNo, city })
+        body: JSON.stringify({ businessName, ownerName, email, password, phone, category, licenseNo, city, address, lat, lng, coverageRadiusKm })
       });
 
       const data = await res.json();
