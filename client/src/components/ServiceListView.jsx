@@ -43,7 +43,7 @@ export default function ServiceListView() {
         const isSaved = savedPlaceIds.includes(place.id);
         const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}`;
         const imageUrl = place.image || CATEGORY_DEFAULT_IMAGES[place.category] || CATEGORY_DEFAULT_IMAGES.service;
-        const isRoamMatePartner = place.sourceType === 'ROAMMATE_REGISTERED' || (place.id && place.id.includes('prov'));
+        const isRoamMatePartner = place.sourceType === 'ROAMMATE_REGISTERED' || (place.id && String(place.id).includes('prov'));
 
         return (
           <div

@@ -71,8 +71,11 @@ export default function MapView() {
     if (!mapContainerRef.current) return;
 
     if (!mapInstanceRef.current) {
+      const mapLat = parseFloat(currentLocation?.lat) || 28.6139;
+      const mapLng = parseFloat(currentLocation?.lng) || 77.2090;
+
       const map = L.map(mapContainerRef.current, {
-        center: [currentLocation.lat, currentLocation.lng],
+        center: [mapLat, mapLng],
         zoom: 13,
         zoomControl: false,
         attributionControl: false
@@ -172,7 +175,7 @@ export default function MapView() {
         iconAnchor: [19, 19]
       });
 
-      const isRegistered = place.sourceType === 'ROAMMATE_REGISTERED' || (place.id && place.id.includes('prov'));
+      const isRegistered = place.sourceType === 'ROAMMATE_REGISTERED' || (place.id && String(place.id).includes('prov'));
       const badgeHtml = isRegistered 
         ? `<span style="background: #f59e0b; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 800; font-size: 10px;">🏢 RoamMate Registered</span>`
         : `<span style="background: #0284c7; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 800; font-size: 10px;">🌐 Map Data</span>`;

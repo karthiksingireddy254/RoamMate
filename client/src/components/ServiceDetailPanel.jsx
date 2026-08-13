@@ -22,7 +22,7 @@ export default function ServiceDetailPanel() {
   const isSaved = savedPlaceIds.includes(selectedService.id);
   const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${selectedService.lat},${selectedService.lng}`;
   const imageUrl = selectedService.image || CATEGORY_DEFAULT_IMAGES[selectedService.category] || CATEGORY_DEFAULT_IMAGES.service;
-  const isRoamMatePartner = selectedService.sourceType === 'ROAMMATE_REGISTERED' || (selectedService.id && selectedService.id.includes('prov'));
+  const isRoamMatePartner = selectedService.sourceType === 'ROAMMATE_REGISTERED' || (selectedService.id && String(selectedService.id).includes('prov'));
 
   return (
     <div className={`fixed inset-x-0 bottom-0 z-[1500] md:relative md:inset-auto md:w-96 md:h-full border-t md:border-t-0 md:border-l shadow-2xl backdrop-blur-xl rounded-t-3xl md:rounded-none overflow-hidden flex flex-col transition-all duration-300 max-h-[85vh] md:max-h-full ${
