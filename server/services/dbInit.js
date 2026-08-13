@@ -212,6 +212,10 @@ async function initializeDatabase() {
       );
     `);
 
+    // Ensure columns exist if places table was created earlier without them
+    await db.query(`ALTER TABLE places ADD COLUMN IF NOT EXISTS verification_status VARCHAR(50) DEFAULT 'VERIFIED';`);
+    await db.query(`ALTER TABLE places ADD COLUMN IF NOT EXISTS provider_id VARCHAR(100);`);
+
     await db.query(`CREATE INDEX IF NOT EXISTS idx_places_category ON places(category);`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_places_lat_lng ON places(lat, lng);`);
 
@@ -267,6 +271,9 @@ async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
+
+    await db.query(`ALTER TABLE service_providers ADD COLUMN IF NOT EXISTS verification_status VARCHAR(50) DEFAULT 'VERIFIED';`);
+    await db.query(`ALTER TABLE service_providers ADD COLUMN IF NOT EXISTS operating_hours VARCHAR(100) DEFAULT '24 Hours Open';`);
 
     // 6. Create Provider Services Table
     await db.query(`

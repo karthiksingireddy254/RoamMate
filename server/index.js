@@ -155,7 +155,7 @@ app.post('/api/business/register', async (req, res) => {
       providerId, businessName, ownerName || businessName, cleanEmail, pwdHash, phone, category || 'service',
       licenseNo || '', city || 'Agra', address || 'Central Service Zone', parseFloat(lat) || 28.6139, parseFloat(lng) || 77.2090,
       parseInt(coverageRadiusKm) || 15, 'AVAILABLE', is247Emergency !== false, 'VERIFIED',
-      JSON.stringify(vehicleTypesArr), description || 'Verified vehicle service workshop.', operating_hours || '24 Hours Open'
+      JSON.stringify(vehicleTypesArr), description || 'Verified vehicle service workshop.', operatingHours || '24 Hours Open'
     ]);
 
     // Also insert into places table for immediate tourist discovery
