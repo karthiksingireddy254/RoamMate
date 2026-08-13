@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTravel } from '../context/TravelContext';
 import { 
-  MapPin, Navigation, Compass, Route, ShieldAlert, Map, List, Search, User, LogIn, Sun, Moon, Building2, Briefcase, PlusCircle 
+  MapPin, Navigation, Compass, ShieldAlert, Map, List, Search, LogIn, Sun, Moon, Building2, PlusCircle 
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -31,6 +31,8 @@ export default function Navbar() {
     requireAuth
   } = useTravel();
 
+  const isLight = theme === 'light';
+
   // Local input state decoupled from context network refetches during typing
   const [queryInput, setQueryInput] = useState(searchKeyword);
 
@@ -51,7 +53,7 @@ export default function Navbar() {
 
   return (
     <header className={`sticky top-0 z-40 border-b px-3 sm:px-4 py-2.5 shadow-xl transition-colors ${
-      theme === 'dark' ? 'bg-slate-950 border-slate-800 text-slate-100' : 'bg-slate-900 border-slate-700 text-white'
+      isLight ? 'bg-white border-slate-200 text-slate-900 shadow-md' : 'bg-slate-950 border-slate-800 text-slate-100'
     }`}>
       <div className="max-w-7xl mx-auto flex flex-col gap-2.5">
         
@@ -74,8 +76,12 @@ export default function Navbar() {
                 <MapPin className="w-5 h-5 text-white" />
               </div>
               <div>
-                <span className="text-xl font-black tracking-tight text-white font-display">Roam<span className="text-sky-400">Mate</span></span>
-                <span className="hidden sm:inline-block ml-2 text-[10px] uppercase tracking-wider font-extrabold text-emerald-400 bg-emerald-950 border border-emerald-700 px-1.5 py-0.5 rounded">Vehicle Services</span>
+                <span className={`text-xl font-black tracking-tight font-display ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                  Roam<span className="text-sky-500">Mate</span>
+                </span>
+                <span className="hidden sm:inline-block ml-2 text-[10px] uppercase tracking-wider font-black text-emerald-600 bg-emerald-100 border border-emerald-300 px-1.5 py-0.5 rounded">
+                  Vehicle Services
+                </span>
               </div>
             </div>
 
@@ -85,10 +91,12 @@ export default function Navbar() {
                 onClick={() => {
                   requireAuth(() => setIsLocationModalOpen(true), 'Please sign in or create an account to pick your location.');
                 }}
-                className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-100 border border-slate-700 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow cursor-pointer"
+                className={`flex items-center gap-1.5 border px-3 py-1.5 rounded-full text-xs font-black transition-all shadow cursor-pointer ${
+                  isLight ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300' : 'bg-slate-900 hover:bg-slate-800 text-slate-100 border-slate-700'
+                }`}
                 title="Change location"
               >
-                <MapPin className={`w-3.5 h-3.5 ${isGpsActive ? 'text-sky-400' : 'text-amber-400'}`} />
+                <MapPin className={`w-3.5 h-3.5 ${isGpsActive ? 'text-sky-500' : 'text-amber-500'}`} />
                 <span className="max-w-[120px] sm:max-w-[180px] truncate">{currentLocation.city || 'Select Location'}</span>
               </button>
 
@@ -96,10 +104,10 @@ export default function Navbar() {
                 onClick={() => {
                   requireAuth(() => requestLocation(), 'Please sign in or create an account to sync your GPS location.');
                 }}
-                className="flex items-center gap-1 bg-sky-950 hover:bg-sky-900 border border-sky-600 text-sky-300 px-2.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer"
+                className="flex items-center gap-1 bg-sky-600 hover:bg-sky-500 text-white px-2.5 py-1.5 rounded-full text-xs font-black transition-all cursor-pointer shadow-md"
                 title="Recenter to my GPS location"
               >
-                <Navigation className="w-3.5 h-3.5 text-sky-400 animate-pulse" />
+                <Navigation className="w-3.5 h-3.5 text-white animate-pulse" />
                 <span className="hidden sm:inline">My Location</span>
               </button>
             </div>
@@ -111,27 +119,29 @@ export default function Navbar() {
             {/* Dark / Light Mode Toggle Button */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-amber-400 transition-transform active:scale-95 shadow cursor-pointer flex items-center gap-1"
-              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+              className={`p-2 rounded-xl border transition-all active:scale-95 shadow cursor-pointer flex items-center gap-1.5 font-black ${
+                isLight ? 'bg-amber-100 border-amber-300 text-amber-900 hover:bg-amber-200' : 'bg-slate-900 border-slate-700 text-amber-400 hover:bg-slate-800'
+              }`}
+              title={`Switch to ${isLight ? 'Dark' : 'Light'} Mode`}
             >
-              {theme === 'dark' ? (
+              {isLight ? (
                 <>
-                  <Sun className="w-4 h-4 text-amber-400" />
-                  <span className="hidden md:inline text-[11px] font-bold text-amber-300">Light</span>
+                  <Moon className="w-4 h-4 text-sky-600" />
+                  <span className="hidden md:inline text-xs font-black text-slate-900">Dark Mode</span>
                 </>
               ) : (
                 <>
-                  <Moon className="w-4 h-4 text-sky-400" />
-                  <span className="hidden md:inline text-[11px] font-bold text-sky-300">Dark</span>
+                  <Sun className="w-4 h-4 text-amber-400" />
+                  <span className="hidden md:inline text-xs font-black text-amber-300">Light Mode</span>
                 </>
               )}
             </button>
 
-            {/* Dedicated Business Organization / Partner Portal Button */}
+            {/* Business Partner Button */}
             {businessUser ? (
               <button
                 onClick={() => setIsBusinessModalOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-extrabold shadow-md cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-white font-black shadow-md cursor-pointer"
                 title="Business Partner Dashboard - Add / Update Services"
               >
                 <Building2 className="w-3.5 h-3.5" />
@@ -141,19 +151,25 @@ export default function Navbar() {
             ) : (
               <button
                 onClick={() => setIsBusinessModalOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-amber-500/60 text-amber-400 font-extrabold shadow cursor-pointer transition-all hover:border-amber-400"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-black shadow cursor-pointer transition-all ${
+                  isLight ? 'bg-amber-50 border-amber-400 text-amber-900 hover:bg-amber-100' : 'bg-slate-900 border-amber-500/60 text-amber-400 hover:bg-slate-800'
+                }`}
                 title="Business Organizations & Workshop Service Providers Sign In / Register"
               >
-                <Building2 className="w-3.5 h-3.5 text-amber-400" />
+                <Building2 className="w-3.5 h-3.5 text-amber-600" />
                 <span>Business Partner</span>
               </button>
             )}
 
             {/* Navigation Tabs */}
-            <nav className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
+            <nav className={`flex items-center gap-1 p-1 rounded-xl border ${
+              isLight ? 'bg-slate-100 border-slate-300' : 'bg-slate-900 border-slate-800'
+            }`}>
               <button
                 onClick={() => setActiveTab('discover')}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-bold transition-colors ${activeTab === 'discover' ? 'bg-sky-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-black transition-colors ${
+                  activeTab === 'discover' ? 'bg-sky-600 text-white shadow-sm' : isLight ? 'text-slate-700 hover:text-black' : 'text-slate-400 hover:text-slate-200'
+                }`}
               >
                 <Compass className="w-3.5 h-3.5" />
                 <span>Discover</span>
@@ -163,26 +179,32 @@ export default function Navbar() {
                 onClick={() => {
                   requireAuth(() => setIsHelpMeModalOpen(true), 'Please sign in or create an account to trigger Help Me emergency assistance.');
                 }}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg font-extrabold bg-rose-950 border border-rose-800 text-rose-300 hover:bg-rose-900 transition-colors cursor-pointer"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg font-black bg-rose-600 hover:bg-rose-500 text-white transition-colors cursor-pointer shadow-sm"
                 title="Help Me Now emergency assistance"
               >
-                <ShieldAlert className="w-3.5 h-3.5 text-rose-400 animate-bounce" />
+                <ShieldAlert className="w-3.5 h-3.5 text-white animate-bounce" />
                 <span>Help</span>
               </button>
             </nav>
 
             {/* View Switcher */}
-            <div className="hidden sm:flex items-center bg-slate-900 p-1 rounded-xl border border-slate-800">
+            <div className={`hidden sm:flex items-center p-1 rounded-xl border ${
+              isLight ? 'bg-slate-100 border-slate-300' : 'bg-slate-900 border-slate-800'
+            }`}>
               <button
                 onClick={() => setViewMode('map')}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold text-xs transition-colors ${viewMode === 'map' ? 'bg-sky-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-black text-xs transition-colors ${
+                  viewMode === 'map' ? 'bg-sky-600 text-white shadow' : isLight ? 'text-slate-700 hover:text-black' : 'text-slate-400 hover:text-slate-200'
+                }`}
               >
                 <Map className="w-3.5 h-3.5" />
                 <span>Map</span>
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-bold text-xs transition-colors ${viewMode === 'list' ? 'bg-sky-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-black text-xs transition-colors ${
+                  viewMode === 'list' ? 'bg-sky-600 text-white shadow' : isLight ? 'text-slate-700 hover:text-black' : 'text-slate-400 hover:text-slate-200'
+                }`}
               >
                 <List className="w-3.5 h-3.5" />
                 <span>List</span>
@@ -193,19 +215,21 @@ export default function Navbar() {
             {user ? (
               <button
                 onClick={() => setIsProfileModalOpen(true)}
-                className="flex items-center gap-2 bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 border border-slate-700 text-slate-100 px-3 py-1.5 rounded-xl font-bold transition-all shadow-md group cursor-pointer"
+                className={`flex items-center gap-2 border px-3 py-1.5 rounded-xl font-black transition-all shadow-md group cursor-pointer ${
+                  isLight ? 'bg-slate-100 hover:bg-slate-200 text-slate-900 border-slate-300' : 'bg-slate-900 hover:bg-slate-800 text-slate-100 border-slate-700'
+                }`}
                 title="View Profile Details"
               >
                 <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-sky-500 to-emerald-500 text-white font-black text-xs flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform">
                   {user.name ? user.name[0].toUpperCase() : 'U'}
                 </div>
-                <span className="max-w-[90px] truncate hidden md:inline font-black text-white">{user.name || 'Profile'}</span>
+                <span className="max-w-[90px] truncate hidden md:inline font-black">{user.name || 'Profile'}</span>
                 <span className="text-xs">{user.gender === 'Female' ? '👩' : user.gender === 'Other' ? '👤' : '👨'}</span>
               </button>
             ) : (
               <button
                 onClick={() => setAuthMode('register')}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-white font-extrabold transition-all shadow-md animate-pulse cursor-pointer"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-white font-black transition-all shadow-md animate-pulse cursor-pointer"
               >
                 <LogIn className="w-3.5 h-3.5" />
                 <span>Create Account</span>
@@ -217,7 +241,9 @@ export default function Navbar() {
         </div>
 
         {/* Row 2: Dedicated Full-Width Prominent Search Bar */}
-        <div className="w-full bg-slate-900/90 border border-slate-800 p-2 rounded-2xl shadow-2xl flex items-center gap-2">
+        <div className={`w-full p-2 rounded-2xl border shadow-xl flex items-center gap-2 ${
+          isLight ? 'bg-slate-100 border-slate-300' : 'bg-slate-900/90 border-slate-800'
+        }`}>
           <form onSubmit={handleSearchSubmit} className="relative flex-1 flex items-center gap-2 w-full">
             <div className="relative flex-1 w-full">
               <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-700 font-bold z-10" />
@@ -225,9 +251,9 @@ export default function Navbar() {
                 type="text"
                 value={queryInput}
                 onChange={(e) => setQueryInput(e.target.value)}
-                placeholder="🔎 Search vehicle services (e.g. Mechanic, Fuel, EV Fast Charger, Towing, Parking)"
+                placeholder="🔎 Search vehicle services (e.g. Mechanic, Towing, Car Breakdown, Fuel, EV Charger)"
                 style={{ color: '#000000', backgroundColor: '#ffffff', fontWeight: '800' }}
-                className="w-full text-black bg-white placeholder-slate-500 text-sm font-extrabold rounded-full pl-10 pr-9 py-2.5 border-2 border-sky-500 focus:border-sky-400 focus:ring-4 focus:ring-sky-400/30 focus:outline-none shadow-xl transition-all"
+                className="w-full text-black bg-white placeholder-slate-500 text-sm font-black rounded-full pl-10 pr-9 py-2.5 border-2 border-sky-500 focus:border-sky-400 focus:ring-4 focus:ring-sky-400/30 focus:outline-none shadow-xl transition-all"
               />
               {queryInput && (
                 <button
@@ -256,21 +282,23 @@ export default function Navbar() {
           </form>
 
           {/* Radius Selector */}
-          <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-700 rounded-full px-3 py-1.5 text-xs text-slate-300 shrink-0">
-            <span className="text-[11px] text-slate-400 font-bold">Radius:</span>
+          <div className={`flex items-center gap-1.5 border rounded-full px-3 py-1.5 text-xs shrink-0 ${
+            isLight ? 'bg-white border-slate-300 text-slate-900 font-black' : 'bg-slate-950 border-slate-700 text-slate-300 font-bold'
+          }`}>
+            <span className="text-[11px] text-slate-500 font-black">Radius:</span>
             <select
               value={radiusKm}
               onChange={(e) => {
                 const val = Number(e.target.value);
                 requireAuth(() => setRadiusKm(val), 'Please sign in or create an account to change search radius.');
               }}
-              className="bg-transparent text-sky-400 font-extrabold focus:outline-none cursor-pointer text-xs"
+              className="bg-transparent text-sky-600 font-black focus:outline-none cursor-pointer text-xs"
             >
-              <option value={1} className="bg-slate-900 text-slate-100">1 km</option>
-              <option value={3} className="bg-slate-900 text-slate-100">3 km</option>
-              <option value={5} className="bg-slate-900 text-slate-100">5 km</option>
-              <option value={10} className="bg-slate-900 text-slate-100">10 km</option>
-              <option value={25} className="bg-slate-900 text-slate-100">25 km</option>
+              <option value={1} className={isLight ? 'bg-white text-slate-900' : 'bg-slate-900 text-slate-100'}>1 km</option>
+              <option value={3} className={isLight ? 'bg-white text-slate-900' : 'bg-slate-900 text-slate-100'}>3 km</option>
+              <option value={5} className={isLight ? 'bg-white text-slate-900' : 'bg-slate-900 text-slate-100'}>5 km</option>
+              <option value={10} className={isLight ? 'bg-white text-slate-900' : 'bg-slate-900 text-slate-100'}>10 km</option>
+              <option value={25} className={isLight ? 'bg-white text-slate-900' : 'bg-slate-900 text-slate-100'}>25 km</option>
             </select>
           </div>
         </div>

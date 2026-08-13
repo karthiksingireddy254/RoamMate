@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTravel } from './context/TravelContext';
 import Navbar from './components/Navbar';
 import CategoryBar from './components/CategoryBar';
@@ -16,15 +16,15 @@ import OnMyRoutePanel from './components/OnMyRoutePanel';
 import ExploreNearbyView from './components/ExploreNearbyView';
 import AuthModal from './components/AuthModal';
 import { 
-  Compass, ShieldAlert, Database, Flame, Wrench, Fuel, Zap, Truck, Car
+  Compass, ShieldAlert, Database, Wrench, Fuel, Zap, Truck
 } from 'lucide-react';
 
 const QUICK_VEHICLE_SITUATIONS = [
-  { id: 'NORMAL', label: 'All Vehicle Services', icon: Compass, color: 'text-sky-400' },
-  { id: 'BIKE_BREAKDOWN', label: 'Mechanic / Breakdown', icon: Wrench, color: 'text-emerald-400' },
-  { id: 'OUT_OF_FUEL', label: 'Out of Fuel', icon: Fuel, color: 'text-amber-400' },
-  { id: 'EV_LOW_BATTERY', label: 'EV Charger Needed', icon: Zap, color: 'text-cyan-400' },
-  { id: 'TOWING_RESCUE', label: 'Towing Rescue', icon: Truck, color: 'text-purple-400' }
+  { id: 'NORMAL', label: 'All Vehicle Services', icon: Compass, color: 'text-sky-500' },
+  { id: 'BIKE_BREAKDOWN', label: 'Mechanic / Garage', icon: Wrench, color: 'text-emerald-500' },
+  { id: 'TOWING_RESCUE', label: 'Towing Recovery', icon: Truck, color: 'text-purple-500' },
+  { id: 'OUT_OF_FUEL', label: 'Fuel / Gas Pump', icon: Fuel, color: 'text-amber-500' },
+  { id: 'EV_LOW_BATTERY', label: 'EV Charger Needed', icon: Zap, color: 'text-cyan-500' }
 ];
 
 export default function App() {
@@ -44,29 +44,36 @@ export default function App() {
     requireAuth
   } = useTravel();
 
+  const isLight = theme === 'light';
   const [isPrefModalOpen, setIsPrefModalOpen] = useState(false);
 
-  const savedPlacesList = nearbyServices.filter(p => savedPlaceIds.includes(p.id));
-
   return (
-    <div className={`flex flex-col h-screen w-screen overflow-hidden relative transition-colors ${
-      theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-900 text-slate-100'
+    <div className={`flex flex-col h-screen w-screen overflow-hidden relative transition-colors duration-300 ${
+      isLight ? 'bg-slate-100 text-slate-900' : 'bg-slate-950 text-slate-100'
     }`}>
       
       {/* Background Ambient Decorative Lights */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-sky-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className={`absolute top-0 left-1/4 w-96 h-96 rounded-full blur-3xl pointer-events-none ${
+        isLight ? 'bg-sky-400/10' : 'bg-sky-600/10'
+      }`} />
+      <div className={`absolute bottom-0 right-1/4 w-96 h-96 rounded-full blur-3xl pointer-events-none ${
+        isLight ? 'bg-emerald-400/10' : 'bg-emerald-600/10'
+      }`} />
 
       {/* Primary Top Header Navigation */}
       <Navbar />
 
       {/* Quick Situation & Live Telemetry Banner */}
-      <div className="bg-slate-950/90 border-b border-slate-800/80 px-4 py-1.5 flex items-center justify-between gap-3 overflow-x-auto no-scrollbar z-30">
+      <div className={`px-4 py-1.5 flex items-center justify-between gap-3 overflow-x-auto no-scrollbar z-30 border-b transition-colors ${
+        isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-slate-950/90 border-slate-800'
+      }`}>
         
         {/* Quick Situation Pills */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider hidden sm:inline">
-            Quick Emergency Mode:
+          <span className={`text-[11px] font-black uppercase tracking-wider hidden sm:inline ${
+            isLight ? 'text-slate-600' : 'text-slate-400'
+          }`}>
+            Emergency Road Assistance:
           </span>
           {QUICK_VEHICLE_SITUATIONS.map((sit) => {
             const Icon = sit.icon;
@@ -77,10 +84,12 @@ export default function App() {
                 onClick={() => {
                   requireAuth(() => setActiveSituation(sit.id), `Please sign in or create an account to activate ${sit.label} mode.`);
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black whitespace-nowrap transition-all border cursor-pointer ${
                   isActive
                     ? 'bg-sky-600 border-sky-400 text-white shadow-md shadow-sky-600/30 scale-105'
-                    : 'bg-slate-900/90 hover:bg-slate-800 text-slate-300 border-slate-800'
+                    : isLight
+                      ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300'
+                      : 'bg-slate-900/90 hover:bg-slate-800 text-slate-300 border-slate-800'
                 }`}
               >
                 <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : sit.color}`} />
@@ -91,9 +100,11 @@ export default function App() {
         </div>
 
         {/* Live Database Indicator */}
-        <div className="hidden lg:flex items-center gap-3 text-[11px] text-slate-400 shrink-0">
-          <div className="flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 px-2.5 py-1 rounded-full text-emerald-400 font-medium">
-            <Database className="w-3.5 h-3.5" />
+        <div className="hidden lg:flex items-center gap-3 text-[11px] shrink-0">
+          <div className={`flex items-center gap-1.5 border px-2.5 py-1 rounded-full font-black ${
+            isLight ? 'bg-emerald-50 border-emerald-300 text-emerald-700' : 'bg-slate-900/90 border-slate-800 text-emerald-400'
+          }`}>
+            <Database className="w-3.5 h-3.5 text-emerald-500" />
             <span>Supabase PostgreSQL Live</span>
           </div>
         </div>
