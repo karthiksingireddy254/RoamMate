@@ -1,5 +1,5 @@
 /**
- * DbInit - Supabase PostgreSQL Database Table Migration & Vehicle Services Dataset
+ * DbInit - Supabase PostgreSQL Database Table Migration & Real-World Dataset Engine
  */
 
 const db = require('../db');
@@ -16,7 +16,7 @@ const SEED_VEHICLE_SERVICES = [
     address: 'NH44 North Highway, Medchal Mandal, Medchal, Telangana, 501400',
     rating: 4.6,
     reviews_count: 850,
-    status: 'Open 24 Hours',
+    status: 'Available Now',
     phone: '+91 94400 12345',
     amenities: JSON.stringify(['XP95 Petrol', 'High Speed Diesel', 'Air Pressure Checking', 'Clean Washroom', '24x7 Card Accepted']),
     description: 'Major 24-hour Swagat highway fuel plaza with automated pumps and nitrogen air.',
@@ -33,7 +33,7 @@ const SEED_VEHICLE_SERVICES = [
     address: 'Patto Plaza Circle, Panaji, Goa, 403001',
     rating: 4.5,
     reviews_count: 620,
-    status: 'Open 24 Hours',
+    status: 'Available Now',
     phone: '+91 832 243 8000',
     amenities: JSON.stringify(['Power Petrol', 'Diesel', '24x7 Card Payment', 'Free Tyre Air']),
     description: 'Central fuel station in Panaji city center equipped with digital payments and air checking.',
@@ -50,7 +50,7 @@ const SEED_VEHICLE_SERVICES = [
     address: 'Gachibowli Main Road, Cyberabad, Hyderabad, 500032',
     rating: 4.7,
     reviews_count: 1240,
-    status: 'Open 24 Hours',
+    status: 'Available Now',
     phone: '+91 40 2300 4545',
     amenities: JSON.stringify(['Speed Petrol', 'Hi-Speed Diesel', 'Nitrogen Air Inflation', 'EV Quick Charging']),
     description: 'Modern BPCL automated smart station with digital pay and quick lube service.',
@@ -69,7 +69,7 @@ const SEED_VEHICLE_SERVICES = [
     address: 'Cyber Towers Basement, HITEC City, Hyderabad, 500081',
     rating: 4.8,
     reviews_count: 430,
-    status: 'Available 24 Hours',
+    status: 'Available Now',
     phone: '1800 209 5161',
     amenities: JSON.stringify(['60kW Dual DC Fast Charger', 'CCS2 & Type-2 Compatible', 'Covered Bay', 'EZ Charge App']),
     description: 'Ultra-fast EV charging station compatible with Nexon EV, ZS EV, Ioniq, and Ather.',
@@ -86,29 +86,12 @@ const SEED_VEHICLE_SERVICES = [
     address: 'Medchal Market Road, Medchal, Telangana, 501400',
     rating: 4.7,
     reviews_count: 180,
-    status: 'Available 24 Hours',
+    status: 'Available Now',
     phone: '1800 121 4000',
     amenities: JSON.stringify(['Ather Fast Charger', 'Ather 450X & Apex Compatible', '24x7 Access']),
     description: 'High-speed 2-wheeler EV charging point for Ather and compatible electric scooters.',
     tags: JSON.stringify(['ev', 'ather', 'medchal', 'scooter']),
     image: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=600&auto=format&fit=crop&q=80'
-  },
-  {
-    id: 'ev-03',
-    name: 'Jio-bp pulse 150kW Ultra Fast EV Charger',
-    category: 'ev',
-    subcategory: 'Superfast Charger',
-    lat: 15.5480,
-    lng: 73.7610,
-    address: 'Chogm Road, Porvorim, North Goa, 403521',
-    rating: 4.9,
-    reviews_count: 310,
-    status: 'Available 24 Hours',
-    phone: '1800 891 9000',
-    amenities: JSON.stringify(['150kW Ultra Fast DC', 'Multi-Vehicle Simultaneous Charge', 'Cafeteria Onsite']),
-    description: 'High-power ultra-fast EV charging station supporting all electric cars and SUVs.',
-    tags: JSON.stringify(['ev', 'jio-bp', 'goa', 'fastcharger']),
-    image: 'https://images.unsplash.com/photo-1563720223185-11003d516935?w=600&auto=format&fit=crop&q=80'
   },
 
   // --- MECHANICS & REPAIR GARAGES (service) ---
@@ -122,7 +105,7 @@ const SEED_VEHICLE_SERVICES = [
     address: 'Near Medchal Bus Terminus, Medchal mandal, Telangana, 501400',
     rating: 4.9,
     reviews_count: 510,
-    status: 'Open now (7:30 AM - 9:30 PM)',
+    status: 'Available Now',
     phone: '+91 98490 55123',
     amenities: JSON.stringify(['Instant Tubeless Puncture Repair', 'Engine Oil Replacement', 'Chain Lube', 'Brake Tuning']),
     description: 'Top-rated motorcycle & scooter repair garage specializing in instant punctures and highway breakdowns.',
@@ -139,7 +122,7 @@ const SEED_VEHICLE_SERVICES = [
     address: 'Mala Bypass Road, Panaji, Goa, 403001',
     rating: 4.8,
     reviews_count: 820,
-    status: 'Open now (9:00 AM - 7:00 PM)',
+    status: 'Available Now',
     phone: '+91 832 242 1100',
     amenities: JSON.stringify(['RE Genuine Spare Parts', 'Touring Setup', 'Clutch Cable Repair', 'Engine Wash']),
     description: 'Official Royal Enfield motorcycle service garage for Classic, Bullet, Himalayan, and Interceptor.',
@@ -156,7 +139,7 @@ const SEED_VEHICLE_SERVICES = [
     address: 'Road No. 12, Banjara Hills, Hyderabad, Telangana, 500034',
     rating: 4.8,
     reviews_count: 1450,
-    status: 'Open now (8:30 AM - 8:00 PM)',
+    status: 'Available Now',
     phone: '+91 40 2335 9999',
     amenities: JSON.stringify(['Computerized Engine Diagnostics', 'Wheel Alignment', 'AC Gas Refill', 'Brake Pad Replacement']),
     description: 'Authorized multi-brand car repair workshop with certified mechanics and genuine spares.',
@@ -175,7 +158,7 @@ const SEED_VEHICLE_SERVICES = [
     address: 'NH44 Highway Emergency Zone, Medchal, Telangana, 501400',
     rating: 4.9,
     reviews_count: 640,
-    status: 'Available 24 Hours',
+    status: 'Available Now',
     phone: '+91 98221 00999',
     amenities: JSON.stringify(['Flatbed Towing', 'Bike Carrier', 'Emergency Fuel Delivery', 'Battery Jumpstart']),
     description: 'Emergency 24-hour towing and roadside recovery for cars, SUVs, and motorbikes.',
@@ -192,90 +175,18 @@ const SEED_VEHICLE_SERVICES = [
     address: 'Calangute - Mapusa Road, North Goa, 403507',
     rating: 4.8,
     reviews_count: 420,
-    status: 'Available 24 Hours',
+    status: 'Available Now',
     phone: '+91 98225 11223',
     amenities: JSON.stringify(['Hydraulic Tow Truck', 'Lockout Key Assistance', 'Tyre Change Onsite']),
     description: 'Instant 24-hour towing service across Goa highways and beach roads.',
     tags: JSON.stringify(['towing', 'assistance', 'goa', 'rescue']),
     image: 'https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=600&auto=format&fit=crop&q=80'
-  },
-
-  // --- VEHICLE PARKING (parking) ---
-  {
-    id: 'parking-01',
-    name: 'City Center Multi-Level Automated Parking Plaza',
-    category: 'parking',
-    subcategory: 'Multi-Level Car Parking',
-    lat: 17.4320,
-    lng: 78.4480,
-    address: 'Panjagutta Junction, Hyderabad, Telangana, 500082',
-    rating: 4.6,
-    reviews_count: 1890,
-    status: 'Open 24 Hours',
-    phone: '+91 40 2341 0000',
-    amenities: JSON.stringify(['CCTV Security 24x7', 'Covered Slots', 'FASTag Automated Entry', 'EV Charging Slots']),
-    description: 'Modern 6-storey automated car and bike parking complex with security cameras.',
-    tags: JSON.stringify(['parking', 'car', 'bike', 'hyderabad']),
-    image: 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=600&auto=format&fit=crop&q=80'
-  },
-  {
-    id: 'parking-02',
-    name: 'Medchal Market Secure Vehicle Parking',
-    category: 'parking',
-    subcategory: 'Paid Parking Space',
-    lat: 17.6245,
-    lng: 78.4805,
-    address: 'Medchal Main Market Road, Medchal, Telangana, 501400',
-    rating: 4.5,
-    reviews_count: 310,
-    status: 'Open (6:00 AM - 11:00 PM)',
-    phone: '+91 94400 98765',
-    amenities: JSON.stringify(['Two Wheeler Slots', 'Car Bay', 'Guarded Entry']),
-    description: 'Safe parking facility located right next to Medchal market and bus stand.',
-    tags: JSON.stringify(['parking', 'medchal', 'bike']),
-    image: 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=600&auto=format&fit=crop&q=80'
-  },
-
-  // --- VEHICLE RENTALS (rental) ---
-  {
-    id: 'rental-01',
-    name: 'Tourist Scooter & Bike Rental Agency',
-    category: 'rental',
-    subcategory: 'Bike & Scooter Rental',
-    lat: 15.5420,
-    lng: 73.7580,
-    address: 'Calangute Circle, North Goa, 403516',
-    rating: 4.8,
-    reviews_count: 1240,
-    status: 'Open (8:00 AM - 9:00 PM)',
-    phone: '+91 94220 56789',
-    amenities: JSON.stringify(['Activa Scooters', 'Royal Enfield Himalayan', 'Helmets Included', 'Zero Deposit Option']),
-    description: 'Top-rated tourist self-drive vehicle agency offering scooters, motorbikes, and open jeeps.',
-    tags: JSON.stringify(['rental', 'scooter', 'bike', 'goa', 'selfdrive']),
-    image: 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=600&auto=format&fit=crop&q=80'
-  },
-  {
-    id: 'rental-02',
-    name: 'Royal Self Drive Cars & SUV Rentals',
-    category: 'rental',
-    subcategory: 'Car Rental',
-    lat: 17.4410,
-    lng: 78.3820,
-    address: 'HITEC City Metro Station, Hyderabad, 500081',
-    rating: 4.7,
-    reviews_count: 650,
-    status: 'Open (7:00 AM - 10:00 PM)',
-    phone: '+91 40 4012 3456',
-    amenities: JSON.stringify(['Self-Drive Hatchbacks & SUVs', 'Sanitized Vehicles', 'Unlimited Kilometers']),
-    description: 'Premium self-drive car rental agency with Thar, Creta, Swift, and Baleno available.',
-    tags: JSON.stringify(['rental', 'car', 'selfdrive', 'hyderabad']),
-    image: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=600&auto=format&fit=crop&q=80'
   }
 ];
 
 async function initializeDatabase() {
   try {
-    console.log('🐘 Initializing Supabase PostgreSQL database tables...');
+    console.log('🐘 Initializing Supabase PostgreSQL database schema...');
 
     // 1. Create Places Table
     await db.query(`
@@ -289,13 +200,14 @@ async function initializeDatabase() {
         address TEXT,
         rating NUMERIC(3, 2) DEFAULT 4.5,
         reviews_count INT DEFAULT 50,
-        status VARCHAR(100) DEFAULT 'Open Now',
+        status VARCHAR(100) DEFAULT 'Available Now',
         phone VARCHAR(100),
         amenities JSONB DEFAULT '[]'::jsonb,
         description TEXT,
         tags JSONB DEFAULT '[]'::jsonb,
         image TEXT,
         provider_id VARCHAR(100),
+        verification_status VARCHAR(50) DEFAULT 'VERIFIED',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
@@ -303,9 +215,8 @@ async function initializeDatabase() {
     await db.query(`CREATE INDEX IF NOT EXISTS idx_places_category ON places(category);`);
     await db.query(`CREATE INDEX IF NOT EXISTS idx_places_lat_lng ON places(lat, lng);`);
 
-    // 2. PURGE NON-VEHICLE PLACES (hotels, restaurants, ATMs, toilets, tourism) FROM DATABASE
+    // 2. PURGE NON-VEHICLE PLACES FROM DATABASE
     await db.query(`DELETE FROM places WHERE category NOT IN ('service', 'towing', 'fuel', 'ev', 'parking', 'rental');`);
-    console.log('🧹 Purged non-vehicle places (hotels, restaurants, ATMs, tourism) from Supabase DB.');
 
     // 3. Create Saved Places Table
     await db.query(`
@@ -318,7 +229,7 @@ async function initializeDatabase() {
       );
     `);
 
-    // 4. Create Users Table
+    // 4. Create Tourist Users Table
     await db.query(`
       CREATE TABLE IF NOT EXISTS users (
         id VARCHAR(100) PRIMARY KEY,
@@ -331,9 +242,9 @@ async function initializeDatabase() {
       );
     `);
 
-    // 5. Create Business Organizations / Service Providers Table
+    // 5. Create Service Providers Table (Business Organizations)
     await db.query(`
-      CREATE TABLE IF NOT EXISTS business_providers (
+      CREATE TABLE IF NOT EXISTS service_providers (
         id VARCHAR(100) PRIMARY KEY,
         business_name VARCHAR(255) NOT NULL,
         owner_name VARCHAR(255) NOT NULL,
@@ -343,18 +254,40 @@ async function initializeDatabase() {
         category VARCHAR(50) NOT NULL,
         license_no VARCHAR(100),
         city VARCHAR(100),
+        address TEXT,
+        lat DOUBLE PRECISION DEFAULT 28.6139,
+        lng DOUBLE PRECISION DEFAULT 77.2090,
+        coverage_radius_km INT DEFAULT 15,
+        availability_status VARCHAR(50) DEFAULT 'AVAILABLE',
+        is_24_7_emergency BOOLEAN DEFAULT TRUE,
+        verification_status VARCHAR(50) DEFAULT 'VERIFIED',
+        vehicle_types JSONB DEFAULT '["Bike", "Car", "SUV"]'::jsonb,
+        description TEXT,
+        operating_hours VARCHAR(100) DEFAULT '24 Hours Open',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
 
-    console.log('✅ Supabase PostgreSQL vehicle database tables verified.');
+    // 6. Create Provider Services Table
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS provider_services (
+        id VARCHAR(100) PRIMARY KEY,
+        provider_id VARCHAR(100) REFERENCES service_providers(id) ON DELETE CASCADE,
+        service_name VARCHAR(255) NOT NULL,
+        description TEXT,
+        vehicle_types JSONB DEFAULT '[]'::jsonb,
+        price_range VARCHAR(100) DEFAULT 'Standard Rate',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    console.log('✅ Supabase PostgreSQL vehicle & provider database schema verified.');
 
     // Upsert vehicle-related services into Supabase PostgreSQL
-    console.log('🌱 Upserting vehicle-related services into Supabase PostgreSQL...');
     for (const p of SEED_VEHICLE_SERVICES) {
       await db.query(`
-        INSERT INTO places (id, name, category, subcategory, lat, lng, address, rating, reviews_count, status, phone, amenities, description, tags, image)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+        INSERT INTO places (id, name, category, subcategory, lat, lng, address, rating, reviews_count, status, phone, amenities, description, tags, image, verification_status)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
         ON CONFLICT (id) DO UPDATE SET
           name = EXCLUDED.name,
           category = EXCLUDED.category,
@@ -364,14 +297,15 @@ async function initializeDatabase() {
           reviews_count = EXCLUDED.reviews_count,
           phone = EXCLUDED.phone,
           description = EXCLUDED.description,
-          image = EXCLUDED.image;
+          image = EXCLUDED.image,
+          verification_status = EXCLUDED.verification_status;
       `, [
         p.id, p.name, p.category, p.subcategory, p.lat, p.lng,
         p.address, p.rating, p.reviews_count, p.status, p.phone,
-        p.amenities, p.description, p.tags, p.image
+        p.amenities, p.description, p.tags, p.image, 'VERIFIED'
       ]);
     }
-    console.log('🌱 Database loaded with vehicle-only services.');
+    console.log('🌱 Database seeded with verified vehicle services.');
 
   } catch (err) {
     console.error('❌ Error initializing PostgreSQL database schema:', err.message);

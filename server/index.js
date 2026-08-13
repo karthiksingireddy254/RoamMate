@@ -36,9 +36,9 @@ function hashPassword(password) {
 // Initialize Supabase PostgreSQL Database Tables & Indexes
 initializeDatabase().catch(err => console.error('Database initialization error:', err));
 
-// --- TRAVELER AUTHENTICATION ENDPOINTS (Supabase PostgreSQL Backed) ---
+// --- TOURIST AUTHENTICATION ENDPOINTS ---
 
-// 0A. Register New User Account
+// 0A. Register New Tourist Account
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { name, email, password, phone, gender } = req.body;
@@ -60,7 +60,7 @@ app.post('/api/auth/register', async (req, res) => {
       VALUES ($1, $2, $3, $4, $5, $6);
     `, [userId, name || cleanEmail.split('@')[0], cleanEmail, pwdHash, phone || 'Not Provided', gender || 'Male']);
 
-    console.log(`👤 New user registered in Supabase DB: ${cleanEmail} (${gender})`);
+    console.log(`👤 New Tourist registered: ${cleanEmail} (${gender})`);
 
     return res.json({
       success: true,
@@ -78,7 +78,7 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-// 0B. Sign In User Account (STRICT PASSWORD MATCH VERIFICATION)
+// 0B. Sign In Tourist Account
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -97,11 +97,11 @@ app.post('/api/auth/login', async (req, res) => {
     const pwdHash = hashPassword(password);
 
     if (userRow.password_hash !== pwdHash) {
-      console.warn(`🔒 Failed login attempt for ${cleanEmail} - Incorrect Password`);
+      console.warn(`🔒 Failed login attempt for ${cleanEmail}`);
       return res.status(400).json({ error: 'Email or password is incorrect.' });
     }
 
-    console.log(`🔑 Successful login for ${cleanEmail}`);
+    console.log(`🔑 Successful Tourist login: ${cleanEmail}`);
 
     return res.json({
       success: true,
@@ -119,31 +119,59 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// --- BUSINESS ORGANIZATION & SERVICE PROVIDER ENDPOINTS ---
+// --- SERVICE PROVIDER AUTHENTICATION & MANAGEMENT ENDPOINTS ---
 
-// 0C. Register Business Organization / Service Provider
+// 0C. Register Service Provider
 app.post('/api/business/register', async (req, res) => {
   try {
-    const { businessName, ownerName, email, password, phone, category, licenseNo, city } = req.body;
+    const { 
+      businessName, ownerName, email, password, phone, category, 
+      licenseNo, city, address, lat, lng, coverageRadiusKm, 
+      vehicleTypes, operatingHours, is247Emergency, description 
+    } = req.body;
+
     if (!email || !password || !businessName || !phone) {
       return res.status(400).json({ error: 'Business name, email, password, and phone number are required.' });
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const existing = await db.query(`SELECT * FROM business_providers WHERE email = $1;`, [cleanEmail]);
+    const existing = await db.query(`SELECT * FROM service_providers WHERE email = $1;`, [cleanEmail]);
     if (existing.rows && existing.rows.length > 0) {
-      return res.status(400).json({ error: 'A business organization with this email already exists.' });
+      return res.status(400).json({ error: 'A service provider account with this email already exists.' });
     }
 
-    const providerId = 'biz_' + Date.now();
+    const providerId = 'prov_' + Date.now();
     const pwdHash = hashPassword(password);
+    const vehicleTypesArr = Array.isArray(vehicleTypes) ? vehicleTypes : ['Bike', 'Car', 'SUV'];
 
     await db.query(`
-      INSERT INTO business_providers (id, business_name, owner_name, email, password_hash, phone, category, license_no, city)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9);
-    `, [providerId, businessName, ownerName || businessName, cleanEmail, pwdHash, phone, category || 'service', licenseNo || '', city || '']);
+      INSERT INTO service_providers (
+        id, business_name, owner_name, email, password_hash, phone, category, 
+        license_no, city, address, lat, lng, coverage_radius_km, 
+        availability_status, is_24_7_emergency, verification_status, vehicle_types, description, operating_hours
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19);
+    `, [
+      providerId, businessName, ownerName || businessName, cleanEmail, pwdHash, phone, category || 'service',
+      licenseNo || '', city || 'Agra', address || 'Central Service Zone', parseFloat(lat) || 28.6139, parseFloat(lng) || 77.2090,
+      parseInt(coverageRadiusKm) || 15, 'AVAILABLE', is247Emergency !== false, 'VERIFIED',
+      JSON.stringify(vehicleTypesArr), description || 'Verified vehicle service workshop.', operating_hours || '24 Hours Open'
+    ]);
 
-    console.log(`🏢 New Business Organization registered in Supabase DB: ${businessName} (${cleanEmail})`);
+    // Also insert into places table for immediate tourist discovery
+    const placeId = 'place_prov_' + providerId;
+    await db.query(`
+      INSERT INTO places (id, name, category, subcategory, lat, lng, address, rating, reviews_count, status, phone, amenities, description, image, provider_id, verification_status)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+      ON CONFLICT (id) DO NOTHING;
+    `, [
+      placeId, businessName, category || 'service', 'Verified Workshop', parseFloat(lat) || 28.6139, parseFloat(lng) || 77.2090,
+      address || 'Central Service Zone', 4.9, 12, 'Available Now', phone,
+      JSON.stringify(['24x7 Roadside Assistance', 'Onsite Repair', 'Verified Workshop']), description || 'Verified Workshop',
+      'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=600&auto=format&fit=crop&q=80', providerId, 'VERIFIED'
+    ]);
+
+    console.log(`🏢 Service Provider registered: ${businessName} (${cleanEmail})`);
 
     return res.json({
       success: true,
@@ -155,16 +183,25 @@ app.post('/api/business/register', async (req, res) => {
         phone,
         category: category || 'service',
         licenseNo: licenseNo || '',
-        city: city || ''
+        city: city || 'Agra',
+        address: address || 'Central Service Zone',
+        lat: parseFloat(lat) || 28.6139,
+        lng: parseFloat(lng) || 77.2090,
+        coverageRadiusKm: parseInt(coverageRadiusKm) || 15,
+        availabilityStatus: 'AVAILABLE',
+        is247Emergency: true,
+        verificationStatus: 'VERIFIED',
+        vehicleTypes: vehicleTypesArr,
+        description: description || 'Verified vehicle service workshop.'
       }
     });
   } catch (err) {
-    console.error('Business Registration API Error:', err.message);
-    return res.status(500).json({ error: 'Failed to create business organization account.' });
+    console.error('Provider Registration API Error:', err.message);
+    return res.status(500).json({ error: 'Failed to register service provider account.' });
   }
 });
 
-// 0D. Business Organization Sign In
+// 0D. Service Provider Sign In
 app.post('/api/business/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -173,21 +210,21 @@ app.post('/api/business/login', async (req, res) => {
     }
 
     const cleanEmail = email.trim().toLowerCase();
-    const providerRes = await db.query(`SELECT * FROM business_providers WHERE email = $1;`, [cleanEmail]);
+    const providerRes = await db.query(`SELECT * FROM service_providers WHERE email = $1;`, [cleanEmail]);
 
     if (!providerRes.rows || providerRes.rows.length === 0) {
-      return res.status(400).json({ error: 'Business email or password is incorrect.' });
+      return res.status(400).json({ error: 'Provider email or password is incorrect.' });
     }
 
     const row = providerRes.rows[0];
     const pwdHash = hashPassword(password);
 
     if (row.password_hash !== pwdHash) {
-      console.warn(`🔒 Failed business login attempt for ${cleanEmail}`);
-      return res.status(400).json({ error: 'Business email or password is incorrect.' });
+      console.warn(`🔒 Failed provider login for ${cleanEmail}`);
+      return res.status(400).json({ error: 'Provider email or password is incorrect.' });
     }
 
-    console.log(`🔑 Successful business login for ${cleanEmail}`);
+    console.log(`🔑 Successful Service Provider login: ${cleanEmail}`);
 
     return res.json({
       success: true,
@@ -199,65 +236,173 @@ app.post('/api/business/login', async (req, res) => {
         phone: row.phone,
         category: row.category,
         licenseNo: row.license_no,
-        city: row.city
+        city: row.city,
+        address: row.address,
+        lat: parseFloat(row.lat),
+        lng: parseFloat(row.lng),
+        coverageRadiusKm: row.coverage_radius_km,
+        availabilityStatus: row.availability_status || 'AVAILABLE',
+        is247Emergency: row.is_24_7_emergency !== false,
+        verificationStatus: row.verification_status || 'VERIFIED',
+        vehicleTypes: typeof row.vehicle_types === 'string' ? JSON.parse(row.vehicle_types) : (row.vehicle_types || ['Bike', 'Car', 'SUV']),
+        description: row.description
       }
     });
   } catch (err) {
-    console.error('Business Login API Error:', err.message);
-    return res.status(500).json({ error: 'Failed to authenticate business provider.' });
+    console.error('Provider Login API Error:', err.message);
+    return res.status(500).json({ error: 'Failed to authenticate service provider.' });
   }
 });
 
-// 0E. Business Provider Add/Update Service Workshop Place
-app.post('/api/business/places', async (req, res) => {
+// 0E. Fetch Service Provider Dashboard Details
+app.get('/api/provider/dashboard/:providerId', async (req, res) => {
   try {
-    const { providerId, name, category, subcategory, lat, lng, address, phone, amenities, description, image, status } = req.body;
-    if (!name || !category || !lat || !lng) {
-      return res.status(400).json({ error: 'Name, category, latitude, and longitude are required.' });
+    const { providerId } = req.params;
+    const providerRes = await db.query(`SELECT * FROM service_providers WHERE id = $1;`, [providerId]);
+    if (!providerRes.rows || providerRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Service provider profile not found.' });
     }
 
-    const placeId = 'place_' + Date.now();
-    const amenitiesArr = Array.isArray(amenities) ? amenities : (amenities ? amenities.split(',').map(s => s.trim()) : []);
+    const p = providerRes.rows[0];
+
+    // Fetch individual services
+    const servicesRes = await db.query(`SELECT * FROM provider_services WHERE provider_id = $1;`, [providerId]);
+    const services = (servicesRes.rows || []).map(s => ({
+      id: s.id,
+      serviceName: s.service_name,
+      description: s.description,
+      priceRange: s.price_range,
+      vehicleTypes: typeof s.vehicle_types === 'string' ? JSON.parse(s.vehicle_types) : s.vehicle_types
+    }));
+
+    return res.json({
+      provider: {
+        id: p.id,
+        businessName: p.business_name,
+        ownerName: p.owner_name,
+        email: p.email,
+        phone: p.phone,
+        category: p.category,
+        licenseNo: p.license_no,
+        city: p.city,
+        address: p.address,
+        lat: parseFloat(p.lat),
+        lng: parseFloat(p.lng),
+        coverageRadiusKm: p.coverage_radius_km,
+        availabilityStatus: p.availability_status || 'AVAILABLE',
+        is247Emergency: p.is_24_7_emergency !== false,
+        verificationStatus: p.verification_status || 'VERIFIED',
+        vehicleTypes: typeof p.vehicle_types === 'string' ? JSON.parse(p.vehicle_types) : (p.vehicle_types || []),
+        description: p.description,
+        operatingHours: p.operating_hours
+      },
+      services
+    });
+  } catch (err) {
+    console.error('Provider Dashboard API Error:', err.message);
+    return res.status(500).json({ error: 'Failed to load provider dashboard.' });
+  }
+});
+
+// 0F. Real-Time Provider Availability Toggle (Syncs to Tourist Discovery)
+app.put('/api/provider/availability', async (req, res) => {
+  try {
+    const { providerId, availabilityStatus, is247Emergency } = req.body;
+    if (!providerId || !availabilityStatus) {
+      return res.status(400).json({ error: 'Provider ID and availability status are required.' });
+    }
 
     await db.query(`
-      INSERT INTO places (id, name, category, subcategory, lat, lng, address, rating, reviews_count, status, phone, amenities, description, image, provider_id)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15);
-    `, [
-      placeId, name, category, subcategory || 'Vehicle Service', parseFloat(lat), parseFloat(lng),
-      address || '', 5.0, 1, status || 'Open Now', phone || '',
-      JSON.stringify(amenitiesArr), description || 'Verified vehicle service workshop listing.',
-      image || 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=600&auto=format&fit=crop&q=80',
-      providerId || ''
-    ]);
+      UPDATE service_providers
+      SET availability_status = $1, is_24_7_emergency = $2
+      WHERE id = $3;
+    `, [availabilityStatus, is247Emergency !== false, providerId]);
 
-    console.log(`🛠️ Business Service Workshop added to Supabase DB: ${name} (${category})`);
+    // Map availability status for Tourist side: AVAILABLE -> Available Now, BUSY -> Busy / Limited, UNAVAILABLE -> Currently Unavailable
+    let statusText = 'Available Now';
+    if (availabilityStatus === 'BUSY') statusText = 'Busy / Limited';
+    if (availabilityStatus === 'UNAVAILABLE') statusText = 'Currently Unavailable';
+
+    await db.query(`
+      UPDATE places
+      SET status = $1
+      WHERE provider_id = $2;
+    `, [statusText, providerId]);
+
+    console.log(`🟢 Provider ${providerId} updated availability status to: ${availabilityStatus}`);
 
     return res.json({
       success: true,
-      place: {
-        id: placeId,
-        name,
-        category,
-        subcategory: subcategory || 'Vehicle Service',
-        lat: parseFloat(lat),
-        lng: parseFloat(lng),
-        address,
-        phone,
-        status: status || 'Open Now',
-        rating: 5.0,
-        reviewsCount: 1,
-        amenities: amenitiesArr,
-        description,
-        image
-      }
+      availabilityStatus,
+      is247Emergency,
+      statusText
     });
   } catch (err) {
-    console.error('Add Business Place API Error:', err.message);
-    return res.status(500).json({ error: 'Failed to add service listing.' });
+    console.error('Update Availability API Error:', err.message);
+    return res.status(500).json({ error: 'Failed to update availability status.' });
   }
 });
 
-// 1. Live Geocode & Reverse Geocode via OpenStreetMap Nominatim
+// 0G. Provider Update Business Details & Location
+app.put('/api/provider/business', async (req, res) => {
+  try {
+    const { providerId, businessName, phone, address, lat, lng, coverageRadiusKm, description } = req.body;
+    if (!providerId) {
+      return res.status(400).json({ error: 'Provider ID is required.' });
+    }
+
+    await db.query(`
+      UPDATE service_providers
+      SET business_name = $1, phone = $2, address = $3, lat = $4, lng = $5, coverage_radius_km = $6, description = $7
+      WHERE id = $8;
+    `, [businessName, phone, address, parseFloat(lat), parseFloat(lng), parseInt(coverageRadiusKm), description, providerId]);
+
+    await db.query(`
+      UPDATE places
+      SET name = $1, phone = $2, address = $3, lat = $4, lng = $5, description = $7
+      WHERE provider_id = $8;
+    `, [businessName, phone, address, parseFloat(lat), parseFloat(lng), description, providerId]);
+
+    return res.json({ success: true, message: 'Business profile updated successfully.' });
+  } catch (err) {
+    console.error('Update Business Details API Error:', err.message);
+    return res.status(500).json({ error: 'Failed to update business profile.' });
+  }
+});
+
+// 0H. Add Provider Service Item
+app.post('/api/provider/services', async (req, res) => {
+  try {
+    const { providerId, serviceName, description, vehicleTypes, priceRange } = req.body;
+    if (!providerId || !serviceName) {
+      return res.status(400).json({ error: 'Provider ID and service name are required.' });
+    }
+
+    const serviceId = 'srv_' + Date.now();
+    const vehicleTypesArr = Array.isArray(vehicleTypes) ? vehicleTypes : ['Bike', 'Car'];
+
+    await db.query(`
+      INSERT INTO provider_services (id, provider_id, service_name, description, vehicle_types, price_range)
+      VALUES ($1, $2, $3, $4, $5, $6);
+    `, [serviceId, providerId, serviceName, description || '', JSON.stringify(vehicleTypesArr), priceRange || 'Standard']);
+
+    return res.json({
+      success: true,
+      service: {
+        id: serviceId,
+        serviceName,
+        description,
+        vehicleTypes: vehicleTypesArr,
+        priceRange: priceRange || 'Standard'
+      }
+    });
+  } catch (err) {
+    console.error('Add Provider Service API Error:', err.message);
+    return res.status(500).json({ error: 'Failed to add service item.' });
+  }
+});
+
+// 1. Live Geocode & Reverse Geocode
 app.get('/api/location/geocode', async (req, res) => {
   const lat = parseFloat(req.query.lat);
   const lng = parseFloat(req.query.lng);

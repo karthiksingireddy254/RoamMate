@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { useTravel } from './context/TravelContext';
+import AuthLandingScreen from './components/AuthLandingScreen';
+import ProviderDashboard from './components/ProviderDashboard';
+import VehicleEmergencyPanel from './components/VehicleEmergencyPanel';
 import Navbar from './components/Navbar';
 import CategoryBar from './components/CategoryBar';
 import MapView from './components/MapView';
@@ -16,7 +19,7 @@ import OnMyRoutePanel from './components/OnMyRoutePanel';
 import ExploreNearbyView from './components/ExploreNearbyView';
 import AuthModal from './components/AuthModal';
 import { 
-  Compass, ShieldAlert, Database, Wrench, Fuel, Zap, Truck
+  Compass, ShieldAlert, Database, Wrench, Fuel, Zap, Truck, ArrowLeft
 } from 'lucide-react';
 
 const QUICK_VEHICLE_SITUATIONS = [
@@ -29,23 +32,42 @@ const QUICK_VEHICLE_SITUATIONS = [
 
 export default function App() {
   const {
+    roleSelection,
+    setRoleSelection,
+    user,
+    businessUser,
     viewMode,
     activeTab,
     setActiveTab,
     selectedService,
     activeSituation,
     setActiveSituation,
-    savedPlaceIds,
-    nearbyServices,
     currentLocation,
     radiusKm,
-    user,
     theme,
-    requireAuth
+    requireAuth,
+    isEmergencyModalOpen,
+    setIsEmergencyModalOpen
   } = useTravel();
 
   const isLight = theme === 'light';
   const [isPrefModalOpen, setIsPrefModalOpen] = useState(false);
+
+  // If Service Provider session is active, render Service Provider Dashboard
+  if (roleSelection === 'provider' && businessUser) {
+    return <ProviderDashboard />;
+  }
+
+  // If unauthenticated AND no role selected, render Auth Landing Screen (Role Choice)
+  if (!user && !businessUser && !roleSelection) {
+    return (
+      <>
+        <AuthLandingScreen />
+        <AuthModal />
+        <BusinessAuthModal />
+      </>
+    );
+  }
 
   return (
     <div className={`flex flex-col h-screen w-screen overflow-hidden relative transition-colors duration-300 ${
@@ -68,13 +90,31 @@ export default function App() {
         isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-slate-950/90 border-slate-800'
       }`}>
         
-        {/* Quick Situation Pills */}
+        {/* Role Switcher & Situation Pills */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-          <span className={`text-[11px] font-black uppercase tracking-wider hidden sm:inline ${
-            isLight ? 'text-slate-600' : 'text-slate-400'
-          }`}>
-            Emergency Road Assistance:
-          </span>
+          <button
+            onClick={() => setRoleSelection(null)}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black transition-all border cursor-pointer ${
+              isLight ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300' : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border-slate-800'
+            }`}
+            title="Switch User Role / Return to Landing Screen"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 text-sky-500" />
+            <span className="hidden sm:inline">Role Selection</span>
+          </button>
+
+          <button
+            onClick={() => setIsEmergencyModalOpen(!isEmergencyModalOpen)}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black whitespace-nowrap transition-all border cursor-pointer shadow-md ${
+              isEmergencyModalOpen
+                ? 'bg-rose-600 border-rose-400 text-white shadow-rose-600/30'
+                : 'bg-rose-500/10 border-rose-500/30 text-rose-600 hover:bg-rose-500/20'
+            }`}
+          >
+            <ShieldAlert className="w-3.5 h-3.5 text-rose-500 animate-pulse" />
+            <span>🚨 Vehicle Emergency Assistance</span>
+          </button>
+
           {QUICK_VEHICLE_SITUATIONS.map((sit) => {
             const Icon = sit.icon;
             const isActive = activeSituation === sit.id;
@@ -117,6 +157,15 @@ export default function App() {
       {/* Main Responsive Body Area */}
       <main className="flex-1 relative flex overflow-hidden p-2 sm:p-3 gap-3 max-w-7xl w-full mx-auto z-10">
         
+        {/* Emergency Flow Modal / Panel Overlay */}
+        {isEmergencyModalOpen && (
+          <div className="fixed inset-0 z-[1600] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+            <div className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <VehicleEmergencyPanel onClose={() => setIsEmergencyModalOpen(false)} />
+            </div>
+          </div>
+        )}
+
         {/* Tab View Switcher Logic */}
         {activeTab === 'discover' && (
           <div className="flex-1 flex flex-col md:flex-row gap-3 w-full h-full overflow-hidden">

@@ -27,9 +27,21 @@ export function TravelProvider({ children }) {
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [isAllServicesModalOpen, setIsAllServicesModalOpen] = useState(false);
   const [isHelpMeModalOpen, setIsHelpMeModalOpen] = useState(false);
+  const [isEmergencyModalOpen, setIsEmergencyModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isBusinessModalOpen, setIsBusinessModalOpen] = useState(false);
   const [travelMode, setTravelMode] = useState('BIKE');
+
+  // --- Role Choice State: null (landing screen) | 'tourist' | 'provider' ---
+  const [roleSelection, setRoleSelection] = useState(() => localStorage.getItem('roammate_role_selection') || null);
+
+  useEffect(() => {
+    if (roleSelection) {
+      localStorage.setItem('roammate_role_selection', roleSelection);
+    } else {
+      localStorage.removeItem('roammate_role_selection');
+    }
+  }, [roleSelection]);
 
   // --- Theme Mode State (Dark / Light) ---
   const [theme, setTheme] = useState(() => localStorage.getItem('roammate_theme') || 'dark');
@@ -47,7 +59,7 @@ export function TravelProvider({ children }) {
   const [authError, setAuthError] = useState(null);
   const [authPromptMessage, setAuthPromptMessage] = useState(null);
 
-  // --- Business Organization Auth State ---
+  // --- Business Organization / Service Provider Auth State ---
   const [businessUser, setBusinessUser] = useState(() => {
     try {
       const saved = localStorage.getItem('roammate_biz_user');
@@ -56,6 +68,8 @@ export function TravelProvider({ children }) {
       return null;
     }
   });
+
+  const [providerAuthMode, setProviderAuthMode] = useState(null); // null | 'login' | 'register'
 
   // Require Auth Guard Helper
   const requireAuth = (callback, customMessage = 'Please sign in or create an account to access services on RoamMate.') => {
@@ -93,6 +107,7 @@ export function TravelProvider({ children }) {
 
       setUser(data.user);
       LocalAuthHelper.setUser(data.user);
+      setRoleSelection('tourist');
       setIsAuthLoading(false);
       return { success: true, user: data.user };
     } catch (err) {
@@ -124,6 +139,7 @@ export function TravelProvider({ children }) {
 
       setUser(data.user);
       LocalAuthHelper.setUser(data.user);
+      setRoleSelection('tourist');
       setIsAuthLoading(false);
       return { success: true, user: data.user };
     } catch (err) {
@@ -133,7 +149,7 @@ export function TravelProvider({ children }) {
     }
   };
 
-  // Business Partner Registration
+  // Service Provider Registration
   const registerBusiness = async (businessName, ownerName, email, password, phone, category, licenseNo, city) => {
     setIsAuthLoading(true);
     setAuthError(null);
@@ -146,7 +162,7 @@ export function TravelProvider({ children }) {
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        const errMsg = data.error || 'Business registration failed.';
+        const errMsg = data.error || 'Service provider registration failed.';
         setAuthError(errMsg);
         setIsAuthLoading(false);
         return { success: false, error: errMsg };
@@ -154,16 +170,17 @@ export function TravelProvider({ children }) {
 
       setBusinessUser(data.provider);
       localStorage.setItem('roammate_biz_user', JSON.stringify(data.provider));
+      setRoleSelection('provider');
       setIsAuthLoading(false);
       return { success: true, provider: data.provider };
     } catch (err) {
-      setAuthError('Network error. Unable to register business organization.');
+      setAuthError('Network error. Unable to register service provider account.');
       setIsAuthLoading(false);
       return { success: false, error: err.message };
     }
   };
 
-  // Business Partner Login
+  // Service Provider Login
   const loginBusiness = async (email, password) => {
     setIsAuthLoading(true);
     setAuthError(null);
@@ -176,7 +193,7 @@ export function TravelProvider({ children }) {
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        const errMsg = data.error || 'Business email or password is incorrect.';
+        const errMsg = data.error || 'Provider email or password is incorrect.';
         setAuthError(errMsg);
         setIsAuthLoading(false);
         return { success: false, error: errMsg };
@@ -184,16 +201,17 @@ export function TravelProvider({ children }) {
 
       setBusinessUser(data.provider);
       localStorage.setItem('roammate_biz_user', JSON.stringify(data.provider));
+      setRoleSelection('provider');
       setIsAuthLoading(false);
       return { success: true, provider: data.provider };
     } catch (err) {
-      setAuthError('Network error during business login.');
+      setAuthError('Network error during provider login.');
       setIsAuthLoading(false);
       return { success: false, error: err.message };
     }
   };
 
-  // Business Partner Add Service Listing
+  // Service Provider Add Service Place Listing
   const addBusinessServicePlace = async (placeData) => {
     try {
       const res = await fetch('/api/business/places', {
@@ -209,7 +227,7 @@ export function TravelProvider({ children }) {
         fetchServices(currentLocation.lat, currentLocation.lng, radiusKm, selectedCategory, searchKeyword, activeSituation);
         return { success: true, place: data.place };
       } else {
-        return { success: false, error: data.error || 'Failed to add place listing.' };
+        return { success: false, error: data.error || 'Failed to add service listing.' };
       }
     } catch (err) {
       return { success: false, error: err.message };
@@ -222,6 +240,7 @@ export function TravelProvider({ children }) {
     LocalAuthHelper.setUser(null);
     setBusinessUser(null);
     localStorage.removeItem('roammate_biz_user');
+    setRoleSelection(null);
     setSelectedService(null);
     setIsProfileModalOpen(false);
     setIsBusinessModalOpen(false);
@@ -238,6 +257,7 @@ export function TravelProvider({ children }) {
       const dummyUser = { id: 'usr_google', email: 'traveler@google.com', name: 'Google Traveler', phone: '+91 98000 11223', gender: 'Male' };
       setUser(dummyUser);
       LocalAuthHelper.setUser(dummyUser);
+      setRoleSelection('tourist');
       setAuthMode(null);
     }
   };
@@ -403,6 +423,8 @@ export function TravelProvider({ children }) {
         setIsAllServicesModalOpen,
         isHelpMeModalOpen,
         setIsHelpMeModalOpen,
+        isEmergencyModalOpen,
+        setIsEmergencyModalOpen,
         isProfileModalOpen,
         setIsProfileModalOpen,
         isBusinessModalOpen,
@@ -410,6 +432,9 @@ export function TravelProvider({ children }) {
         travelMode,
         setTravelMode,
         fetchServices,
+        // Role Selection
+        roleSelection,
+        setRoleSelection,
         // Theme State
         theme,
         toggleTheme,
@@ -430,6 +455,9 @@ export function TravelProvider({ children }) {
         sendPasswordReset,
         // Business Auth & Management Exports
         businessUser,
+        setBusinessUser,
+        providerAuthMode,
+        setProviderAuthMode,
         registerBusiness,
         loginBusiness,
         addBusinessServicePlace
