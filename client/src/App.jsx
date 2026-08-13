@@ -15,7 +15,6 @@ import HelpMeNowModal from './components/HelpMeNowModal';
 import LocationPickerModal from './components/LocationPickerModal';
 import UserPreferencesModal from './components/UserPreferencesModal';
 import UserProfileModal from './components/UserProfileModal';
-import AiRecommendationBanner from './components/AiRecommendationBanner';
 import OnMyRoutePanel from './components/OnMyRoutePanel';
 import ExploreNearbyView from './components/ExploreNearbyView';
 import { 
@@ -175,9 +174,6 @@ export default function App() {
             {/* Side Panel / List Overlay */}
             <div className={`w-full md:w-96 flex flex-col h-full overflow-y-auto ${viewMode === 'map' ? 'hidden md:flex' : 'flex'}`}>
               
-              {/* AI Context Recommendation Banner */}
-              <AiRecommendationBanner />
-
               {/* Synchronized Card List */}
               <div className="flex-1 overflow-y-auto">
                 <ServiceListView />
