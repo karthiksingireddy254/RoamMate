@@ -52,9 +52,16 @@ export default function ServiceDetailPanel() {
 
         {/* Title & Category Badge Overlay */}
         <div className="absolute bottom-3 left-4 right-4">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="text-[10px] uppercase font-black tracking-wider px-2.5 py-0.5 rounded-full bg-sky-950 text-sky-300 border border-sky-600/50 backdrop-blur-md">
               {selectedService.subcategory || selectedService.category}
+            </span>
+            <span className={`text-[10px] font-black tracking-wider px-2.5 py-0.5 rounded-full backdrop-blur-md border ${
+              selectedService.sourceType === 'ROAMMATE_REGISTERED'
+                ? 'bg-emerald-950 text-emerald-300 border-emerald-600/50'
+                : 'bg-blue-950 text-blue-300 border-blue-600/50'
+            }`}>
+              {selectedService.sourceLabel || (selectedService.sourceType === 'ROAMMATE_REGISTERED' ? '🏢 RoamMate Registered' : '🌐 Google Maps')}
             </span>
           </div>
           <h3 className="text-lg font-black text-white font-display leading-tight drop-shadow-md">

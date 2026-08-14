@@ -59,13 +59,19 @@ export default function MapView() {
   const {
     currentLocation,
     radiusKm,
+    setRadiusKm,
     nearbyServices,
     selectedService,
     setSelectedService,
     requestLocation,
+    setManualLocation,
     isLoading,
-    requireAuth
+    requireAuth,
+    isGpsActive
   } = useTravel();
+
+  const isInternalMoveRef = useRef(false);
+  const moveTimeoutRef = useRef(null);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -98,6 +104,45 @@ export default function MapView() {
     };
   }, []);
 
+  // Map Click & Map Pan/Drag (moveend) Discovery Event Listeners
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+
+    // 1. Map Click Event: Discovery location set to tapped point
+    const handleMapClick = (e) => {
+      const { lat, lng } = e.latlng;
+      isInternalMoveRef.current = true;
+      setManualLocation(lat, lng, `Location (${lat.toFixed(3)}, ${lng.toFixed(3)})`);
+    };
+
+    // 2. Map MoveEnd (Pan/Drag) Event: Discovery location set to new map center after 650ms debounce
+    const handleMapMoveEnd = () => {
+      if (isInternalMoveRef.current) {
+        isInternalMoveRef.current = false;
+        return;
+      }
+
+      if (moveTimeoutRef.current) clearTimeout(moveTimeoutRef.current);
+      moveTimeoutRef.current = setTimeout(() => {
+        const center = map.getCenter();
+        const dist = Math.sqrt(Math.pow(center.lat - currentLocation.lat, 2) + Math.pow(center.lng - currentLocation.lng, 2));
+        if (dist > 0.003) {
+          setManualLocation(center.lat, center.lng, `Map Discovery Center`);
+        }
+      }, 650);
+    };
+
+    map.on('click', handleMapClick);
+    map.on('moveend', handleMapMoveEnd);
+
+    return () => {
+      map.off('click', handleMapClick);
+      map.off('moveend', handleMapMoveEnd);
+      if (moveTimeoutRef.current) clearTimeout(moveTimeoutRef.current);
+    };
+  }, [currentLocation.lat, currentLocation.lng, setManualLocation]);
+
   // Handle live Map Style Switcher (Google Streets vs Hybrid Satellite)
   useEffect(() => {
     if (mapInstanceRef.current && tileLayerRef.current) {
@@ -111,8 +156,9 @@ export default function MapView() {
 
     const { lat, lng } = currentLocation;
 
+    isInternalMoveRef.current = true;
     map.flyTo([lat, lng], radiusKm <= 3 ? 14 : radiusKm <= 10 ? 13 : 11, {
-      duration: 1.2
+      duration: 1.0
     });
 
     if (userMarkerRef.current) {
@@ -120,7 +166,7 @@ export default function MapView() {
     } else {
       const userIcon = L.divIcon({
         className: 'custom-user-icon',
-        html: `<div class="user-location-pin" title="Your Location"></div>`,
+        html: `<div class="user-location-pin" title="Discovery Center"></div>`,
         iconSize: [22, 22],
         iconAnchor: [11, 11]
       });
@@ -152,27 +198,52 @@ export default function MapView() {
     const bounds = L.latLngBounds();
     bounds.extend([currentLocation.lat, currentLocation.lng]);
 
+    const categoryBadges = {
+      fuel: '⛽',
+      ev: '⚡',
+      towing: '🚚',
+      service: '🔧'
+    };
+
     nearbyServices.forEach((place) => {
       const isSelected = selectedService && selectedService.id === place.id;
       const catColor = CATEGORY_MARKER_COLORS[place.category] || '#0284c7';
       const imgUrl = place.image || CATEGORY_DEFAULT_IMAGES[place.category] || CATEGORY_DEFAULT_IMAGES.explore;
+      const badgeIcon = categoryBadges[place.category] || '📍';
 
       bounds.extend([place.lat, place.lng]);
 
       const markerHtml = `
-        <div class="custom-service-marker ${isSelected ? 'active-marker' : ''}" style="border-color: ${catColor}; overflow: hidden;" title="${place.name}">
+        <div class="custom-service-marker ${isSelected ? 'active-marker' : ''}" style="border-color: ${catColor}; position: relative; overflow: visible;" title="${place.name}">
           <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
+          <span style="position: absolute; bottom: -3px; right: -3px; background: #0f172a; border: 1.5px solid ${catColor}; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 10px;">${badgeIcon}</span>
         </div>
       `;
 
       const customIcon = L.divIcon({
         className: 'custom-div-icon',
         html: markerHtml,
-        iconSize: [38, 38],
-        iconAnchor: [19, 19]
+        iconSize: [40, 40],
+        iconAnchor: [20, 20]
       });
 
       const marker = L.marker([place.lat, place.lng], { icon: customIcon });
+
+      const popupContent = `
+        <div style="min-width: 190px; padding: 4px; font-family: sans-serif;">
+          <div style="font-weight: 800; font-size: 13px; color: #0f172a; margin-bottom: 3px;">${place.name}</div>
+          <div style="margin-bottom: 5px;">
+            <span style="background: ${place.sourceType === 'ROAMMATE_REGISTERED' ? '#dcfce7' : '#e0f2fe'}; color: ${place.sourceType === 'ROAMMATE_REGISTERED' ? '#15803d' : '#0369a1'}; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 9999px;">${place.sourceLabel}</span>
+          </div>
+          <div style="font-size: 11px; color: #334155; font-weight: 700; margin-bottom: 2px;">
+            📍 <b>${place.distanceKm} km</b> away • ⭐ ${place.rating || 4.8}
+          </div>
+          <div style="font-size: 10px; color: #16a34a; font-weight: 700;">
+            🟢 ${place.status || 'Available Now'}
+          </div>
+        </div>
+      `;
+      marker.bindPopup(popupContent, { offset: [0, -15] });
 
       marker.on('click', () => {
         requireAuth(() => {
@@ -192,6 +263,24 @@ export default function MapView() {
   return (
     <div className="relative w-full h-full min-h-[400px] overflow-hidden rounded-2xl border border-slate-800 shadow-inner">
       <div ref={mapContainerRef} className="w-full h-full" />
+
+      {/* Top Left Radius Quick Switcher Pills */}
+      <div className="absolute top-4 left-4 z-[400] bg-slate-900/90 border border-slate-700/90 rounded-xl p-1.5 shadow-lg backdrop-blur-md flex items-center gap-1">
+        <span className="text-[11px] font-black text-slate-400 px-1">Radius:</span>
+        {[5, 10, 15, 25, 50].map((r) => (
+          <button
+            key={r}
+            onClick={() => setRadiusKm(r)}
+            className={`px-2 py-0.5 rounded-lg text-xs font-black transition-all ${
+              radiusKm === r
+                ? 'bg-sky-600 text-white shadow shadow-sky-600/40 scale-105'
+                : 'text-slate-300 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            {r}km
+          </button>
+        ))}
+      </div>
 
       {/* Google Maps Style Toggle (Streets vs Hybrid Satellite) */}
       <div className="absolute top-4 right-4 z-[400] bg-slate-900/90 border border-slate-700/90 rounded-xl p-1 shadow-lg backdrop-blur-md flex items-center gap-1">
@@ -219,13 +308,13 @@ export default function MapView() {
         title="Recenter Map to My Location"
       >
         <Navigation className="w-4 h-4 text-sky-400 animate-pulse" />
-        <span>📍 My Location</span>
+        <span>📍 {isGpsActive ? 'Live GPS Active' : 'My Location'}</span>
       </button>
 
       {isLoading && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[400] bg-slate-900/90 border border-sky-500/50 text-sky-300 px-4 py-2 rounded-full shadow-xl backdrop-blur-md flex items-center gap-2 text-xs font-medium animate-in fade-in duration-200">
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[400] bg-slate-900/90 border border-sky-500/50 text-sky-300 px-4 py-2 rounded-full shadow-xl backdrop-blur-md flex items-center gap-2 text-xs font-medium animate-in fade-in duration-200">
           <Compass className="w-4 h-4 text-sky-400 animate-spin" />
-          <span>📍 Finding services around you...</span>
+          <span>📍 Locating vehicle services around you...</span>
         </div>
       )}
 
